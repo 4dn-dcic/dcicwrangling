@@ -713,7 +713,7 @@ def run_missing_chip1(control, wf_info, organism, target_type, paired, files, ob
         fraglist = frag_temp * len(files)
         parameters['chip.fraglen'] = fraglist
 
-    tag = '1.1.1'
+    tag = ''
     """Creates the trigger json that is used by foufront endpoint.
     """
     input_json = {'input_files': input_files,
@@ -805,7 +805,7 @@ def run_missing_chip2(control_set, wf_info, organism, target_type, paired,
         fraglist = frag_temp * len(ta)
         parameters['chip.fraglen'] = fraglist
 
-    tag = '1.1.1'
+    tag = ''
     """Creates the trigger json that is used by foufront endpoint.
     """
     input_json = {'input_files': input_files,
@@ -906,7 +906,7 @@ def run_missing_atac1(wf_info, organism, paired, files, obj_keys, my_env, my_key
         fraglist = frag_temp * len(files)
         parameters['atac.fraglen'] = fraglist
 
-    tag = '1.1.1'
+    tag = ''
     """Creates the trigger json that is used by foufront endpoint.
     """
     input_json = {'input_files': input_files,
@@ -986,7 +986,7 @@ def run_missing_atac2(wf_info, organism, paired, ta,
         fraglist = frag_temp * len(ta)
         parameters['atac.fraglen'] = fraglist
 
-    tag = '1.1.1'
+    tag = ''
     """Creates the trigger json that is used by foufront endpoint.
     """
     input_json = {'input_files': input_files,
