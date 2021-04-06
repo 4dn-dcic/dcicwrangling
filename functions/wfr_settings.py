@@ -285,6 +285,17 @@ def step_settings(step_name, my_organism, attribution, params={}):
                     'file_type': 'read positions',
                     'description': 'Merged file, positions of aligned reads in bed format, one line per read mate'}
             }
+        },
+        {
+            "wf_name": "merge-fastq",
+            "wf_uuid": "e20ef13d-64d8-4d10-94b1-ed45e7d6a7c2",
+            "parameters": {},
+            'custom_pf_fields': {
+                'fastq': {
+                    'genome_assembly': genome,
+                    'file_type': 'reads',
+                    'description': 'Merged fastq file'}
+            }
         }
     ]
     # if params, overwrite parameters
