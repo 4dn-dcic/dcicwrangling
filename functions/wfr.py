@@ -828,10 +828,16 @@ def run_missing_chip2(control_set, wf_info, organism, target_type, paired,
     display(HTML("<a href='{}' target='_blank'>{}</a>".format(url, e['status'])))
 
 
-def run_missing_atac1(wf_info, organism, paired, files, obj_keys, my_env, my_key, run_name):
+def run_missing_atac1(wf_info, organism, paired, files, obj_keys, my_env,
+                      my_key, run_name, source=''):
     my_s3_util = s3Utils(env=my_env)
     raw_bucket = my_s3_util.raw_file_bucket
     out_bucket = my_s3_util.outfile_bucket
+
+    input_fastq_bucket = raw_bucket
+    if source == 'processed':
+        input_fastq_bucket = out_bucket
+
 
     if organism == "human":
         org = 'hs'
@@ -878,7 +884,7 @@ def run_missing_atac1(wf_info, organism, paired, files, obj_keys, my_env, my_key
         }]
 
     input_files.append({"object_key": obj_keys,
-                        "bucket_name": raw_bucket,
+                        "bucket_name": input_fastq_bucket,
                         "workflow_argument_name": "atac.fastqs",
                         "uuid": files})
 
