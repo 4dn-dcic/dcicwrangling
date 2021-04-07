@@ -710,7 +710,7 @@ def run_missing_chip1(control, wf_info, organism, target_type, paired, files, ob
         }
     if paired == 'single':
         frag_temp = [300]
-        fraglist = frag_temp * len(files)
+        fraglist = frag_temp * len(files[0])
         parameters['chip.fraglen'] = fraglist
 
     tag = ''
@@ -909,7 +909,7 @@ def run_missing_atac1(wf_info, organism, paired, files, obj_keys, my_env,
 
     if paired == 'single':
         frag_temp = [300]
-        fraglist = frag_temp * len(files)
+        fraglist = frag_temp * len(files[0])
         parameters['atac.fraglen'] = fraglist
 
     tag = ''
