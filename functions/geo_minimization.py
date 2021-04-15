@@ -4,7 +4,7 @@ Common functions for GEO Minimization of the JSON objects
 URL = 'https://data.4dnucleome.org'
 
 
-def add_value_to_output_dict(key, value, output_dictionary):
+def add_to_output_dict(key, value, output_dictionary):
     '''add to the output_dictionary either a single key:value pair or
     all the key:values if value is a dictionary'''
     if isinstance(value, dict):
@@ -14,7 +14,7 @@ def add_value_to_output_dict(key, value, output_dictionary):
     else:
         if value:  # skip if None
             output_dictionary[key] = value
-    return
+    return output_dictionary
 
 
 def boildown_at_id(at_id):
@@ -144,6 +144,14 @@ def boildown_biosample_quantity(experiment_object):
     else:
         quantity = str(quantity)
     return quantity + ' ' + unit
+
+
+def boildown_targeted_regions(targeted_regions):
+    '''Specific to Capture Hi-C Experiments. Ignores oligo_file'''
+    targets = []
+    for region in targeted_regions:
+        targets.append(boildown_title(region['target']))
+    return ', '.join(targets)
 
 
 def boildown_tissue_organ_info(tissue_organ_info):
