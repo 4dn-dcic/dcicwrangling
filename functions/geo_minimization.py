@@ -132,6 +132,7 @@ def boildown_organism(organism_object):
 
 # for Experiment
 def boildown_exp_categorizer(exp_categorizer_object):
+    '''This is a calcprop for all experiments'''
     output = exp_categorizer_object.get('combined', '')
     return output
 
@@ -163,19 +164,33 @@ def boildown_tissue_organ_info(tissue_organ_info):
 def boildown_related_files(related_files):
     # keep only "paired with" relationships
     relations = []
-    for file in related_files:
-        if file['relationship_type'] == "paired with":
-            relations.append(file['file']['accession'])
-#             relations.append(file['relationship_type'] + " " + file['file']['accession'])
+    for rel_file in related_files:
+        if rel_file['relationship_type'] == "paired with":
+            relations.append(rel_file['file']['accession'])
+#             relations.append(rel_file['relationship_type'] + " " + rel_file['file']['accession'])
     return ', '.join(relations)
 
 
-file_quality_metric_interesting_values = [
-    'Sequence length',  # raw_file
-    'Total Sequences'
-]
+def boildown_quality_metric(quality_metric):
+    '''input is only quality_metric embedded in file, not entire object'''
+    qc_dict = {}
+    for metric, value in quality_metric.items():
+        if metric in ['Sequence length', 'Total Sequences']:
+            qc_dict[metric] = value
+    return qc_dict
 
-file_interesting_values = [
+
+def boildown_wfr_outputs(wfr_outputs):
+    wfr = wfr_outputs[0]  # file derives only from the first wfr in the list
+    wfr_dict = {}
+    wfr_dict['workflow_run'] = URL + wfr['@id']
+    # wfr_dict['workflow'] = wfr['workflow']['display_title']
+    input_files = [f['value']['display_title'] for f in wfr['input_files']]
+    wfr_dict['derived_from'] = ", ".join(input_files)
+    return wfr_dict
+
+
+file_simple_values = [
     'paired_end',  # raw_file
     'accession',
     'display_title',  # raw_file
@@ -185,32 +200,25 @@ file_interesting_values = [
     'instrument',  # raw_file
     'genome_assembly',
     'md5sum',  # raw_file
-    # 'content_md5sum',
 ]
+
+file_function_dispatch = {
+    'file_format': boildown_title,
+    'related_files': boildown_related_files,
+    'quality_metric': boildown_quality_metric,
+    'workflow_run_outputs': boildown_wfr_outputs,
+}
 
 
 def boildown_file(file_object):
-    file_dictionary = {}
+    '''Works with raw and processed files'''
+    file_dict = {}
     for key, value in file_object.items():
-        if key in file_interesting_values:
-            if isinstance(value, list):
-                if len(value) > 0:
-                    file_dictionary[key] = ', '.join(value)
-            else:
-                file_dictionary[key] = str(value)
-        elif key == 'file_format':  # raw_file
-            file_dictionary[key] = boildown_title(value)
-        elif key == 'quality_metric':
-            for k in value.keys():
-                if k in file_quality_metric_interesting_values:
-                    file_dictionary[k] = str(value[k])
-        elif key == 'related_files':
-            file_dictionary[key] = boildown_related_files(value)
-        elif key == 'workflow_run_outputs' and len(value) > 0:
-            wfr = value[0]  # file derives only from the first wfr in the list
-            file_dictionary['workflow_run'] = URL + wfr['@id']
-#             file_dictionary['workflow'] = wfr['workflow']['display_title']
-            file_dictionary['derived_from'] = ", ".join([
-                infile['value']['display_title'] for infile in wfr['input_files']
-            ])
-    return file_dictionary
+        result = None
+        if key in file_simple_values:
+            result = value
+        elif key in file_function_dispatch:
+            result = file_function_dispatch[key](value)
+        if result:
+            file_dict = add_to_output_dict(key, result, file_dict)
+    return file_dict
