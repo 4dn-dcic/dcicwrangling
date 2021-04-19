@@ -82,14 +82,15 @@ def boildown_external_references(external_references_list):
 def boildown_replicate_exps(replicate_exps):
     '''return list of dict with Exp accession, biorep and techrep'''
     output_list = []
+    exp_ids = []
     for replicate in replicate_exps:
         output_list.append({
             'replicate': replicate['replicate_exp']['accession'],
-            '@id': replicate['replicate_exp']['@id'],
             'biological_replicate_number': replicate['bio_rep_no'],
             'technical_replicate_number': replicate['tec_rep_no']
         })
-    return output_list
+        exp_ids.append(replicate['replicate_exp']['@id'])
+    return output_list, exp_ids
 
 
 def boildown_publication(publication):
@@ -136,6 +137,10 @@ def boildown_exp_categorizer(exp_categorizer_object):
     '''This is a calcprop for all experiments'''
     output = exp_categorizer_object.get('combined', '')
     return output
+
+
+def boildown_biosample_name(biosample):
+    return biosample['accession'], biosample['@id']
 
 
 def boildown_biosample_quantity(experiment_object):
