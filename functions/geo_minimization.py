@@ -81,16 +81,16 @@ def boildown_external_references(external_references_list):
 # additional functions for ExpSet
 def boildown_replicate_exps(replicate_exps):
     '''return list of dict with Exp accession, biorep and techrep'''
-    output_list = []
+    replicates = []
     exp_ids = []
     for replicate in replicate_exps:
-        output_list.append({
+        replicates.append({
             'replicate': replicate['replicate_exp']['accession'],
             'biological_replicate_number': replicate['bio_rep_no'],
             'technical_replicate_number': replicate['tec_rep_no']
         })
         exp_ids.append(replicate['replicate_exp']['@id'])
-    return output_list, exp_ids
+    return replicates, exp_ids
 
 
 def boildown_publication(publication):
@@ -121,9 +121,6 @@ def boildown_experiments_in_set(experiments_in_set):
 #     return exp_type
 #
 #
-# def get_organism_id(individual):
-#     '''NCBI Taxon ID is the second part of an Organism @id'''
-#     return individual['organism']['@id'].split('/')[2]
 def boildown_organism(organism_object):
     '''Return interesting organism values from organism_object'''
     organism_dict = {}
@@ -133,6 +130,53 @@ def boildown_organism(organism_object):
 
 
 # for Experiment
+pipeline_pages = {
+    'atacseq': 'atacseq-processing-pipeline',
+    'chipseq': 'chipseq-processing-pipeline',
+    'hic': 'hi_c-processing-pipeline',
+    'rnaseq': 'rnaseq-processing-pipeline',
+}
+
+exp2pipeline = {
+    # official
+    'in situ Hi-C': 'hic',
+    'Dilution Hi-C': 'hic',
+    'TCC': 'hic',
+    'DNase Hi-C': 'hic',
+    'Capture Hi-C': 'hic',
+    'Micro-C': 'hic',
+    'ATAC-seq': 'atacseq',
+    'ChIP-seq': 'chipseq',
+    'RNA-seq': 'rnaseq',
+    '2-stage Repli-seq': 'repliseq',
+    'Multi-stage Repli-seq': 'repliseq',
+
+    # preliminary
+    # 'ChIA-PET': 'hic',
+    # 'in situ ChIA-PET': 'hic',
+    # 'TrAC-loop': 'hic',
+    # 'PLAC-seq': 'hic',
+    # 'MARGI': 'margi',
+    # 'TSA-seq': 'repliseq',
+    # 'NAD-seq': 'repliseq',
+}
+
+
+def boildown_experiment_type(experiment_type):
+    '''returns experiment_type and data_processing'''
+    exp_type_dict = {}
+    exp_type = experiment_type['title']
+    exp_type_dict['experiment_type'] = exp_type
+    pipeline = exp2pipeline.get(exp_type)
+    if pipeline:
+        pipeline_doc = pipeline_pages.get(pipeline)
+        if pipeline_doc:
+            exp_type_dict['data_processing'] = URL + '/resources/data-analysis/' + pipeline_doc
+        else:
+            print('WARNING: missing {} documentation page'.format(pipeline))
+    return exp_type_dict
+
+
 def boildown_exp_categorizer(exp_categorizer_object):
     '''This is a calcprop for all experiments'''
     output = exp_categorizer_object.get('combined', '')
@@ -220,11 +264,11 @@ def boildown_file(file_object):
     '''Works with raw and processed files'''
     file_dict = {}
     for key, value in file_object.items():
-        result = None
+        export_value = None
         if key in file_simple_values:
-            result = value
+            export_value = value
         elif key in file_function_dispatch:
-            result = file_function_dispatch[key](value)
-        if result:
-            file_dict = add_to_output_dict(key, result, file_dict)
+            export_value = file_function_dispatch[key](value)
+        if export_value:
+            file_dict = add_to_output_dict(key, export_value, file_dict)
     return file_dict
