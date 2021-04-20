@@ -112,15 +112,6 @@ def boildown_experiments_in_set(experiments_in_set):
     return output_dict
 
 
-# def get_experiment_type(experiment):
-#     '''get exp_type from experiment'''
-#     exp_type = boildown_title(experiment['experiment_type'])
-# #     if exp_type.get('assay_subclass_short'):
-# #         return exp_type['assay_subclass_short']
-# #     else:
-#     return exp_type
-#
-#
 def boildown_organism(organism_object):
     '''Return interesting organism values from organism_object'''
     organism_dict = {}
