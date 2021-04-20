@@ -231,12 +231,13 @@ def boildown_quality_metric(quality_metric):
 
 
 def boildown_wfr_outputs(wfr_outputs):
-    wfr = wfr_outputs[0]  # file derives only from the first wfr in the list
     wfr_dict = {}
-    wfr_dict['workflow_run'] = URL + wfr['@id']
-    # wfr_dict['workflow'] = wfr['workflow']['display_title']
-    input_files = [f['value']['display_title'] for f in wfr['input_files']]
-    wfr_dict['derived_from'] = ", ".join(input_files)
+    if wfr_outputs:
+        wfr = wfr_outputs[0]  # file derives from the first wfr in the list
+        wfr_dict['workflow_run'] = URL + wfr['@id']
+        # wfr_dict['workflow'] = wfr['workflow']['display_title']
+        input_files = [f['value']['display_title'] for f in wfr['input_files']]
+        wfr_dict['derived_from'] = ", ".join(input_files)
     return wfr_dict
 
 
