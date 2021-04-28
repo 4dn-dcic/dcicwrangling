@@ -10,10 +10,10 @@ def add_to_output_dict(key, value, output_dictionary):
     if isinstance(value, dict):
         for inner_key, inner_value in value.items():
             if inner_value:  # skip if None
-                output_dictionary[inner_key] = str(inner_value)
+                output_dictionary[inner_key] = inner_value
     else:
         if value:  # skip if None
-            output_dictionary[key] = str(value)
+            output_dictionary[key] = value
     return output_dictionary
 
 
