@@ -10,10 +10,10 @@ def add_to_output_dict(key, value, output_dictionary):
     if isinstance(value, dict):
         for inner_key, inner_value in value.items():
             if inner_value:  # skip if None
-                output_dictionary[inner_key] = inner_value
+                output_dictionary[inner_key] = str(inner_value)
     else:
         if value:  # skip if None
-            output_dictionary[key] = value
+            output_dictionary[key] = str(value)
     return output_dictionary
 
 
@@ -172,6 +172,15 @@ def boildown_exp_categorizer(exp_categorizer_object):
     '''This is a calcprop for all experiments'''
     output = exp_categorizer_object.get('combined', '')
     return output
+
+
+def boildown_experiment_relations(experiment_relations):
+    relations = []
+    for rel in experiment_relations:
+        rel_type = rel['relationship_type']
+        rel_item = rel['experiment']['@id'].split('/')[2]
+        relations.append(rel_type + ": " + rel_item)
+    return ', '.join(relations)
 
 
 def boildown_biosample_name(biosample):
