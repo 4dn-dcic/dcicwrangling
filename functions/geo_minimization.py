@@ -4,16 +4,23 @@ Common functions for GEO Minimization of the JSON objects
 URL = 'https://data.4dnucleome.org'
 
 
+def num2str(value):
+    if isinstance(value, (int, float)):
+        return str(value)
+    else:
+        return value
+
+
 def add_to_output_dict(key, value, output_dictionary):
     '''add to the output_dictionary either a single key:value pair or
     all the key:values if value is a dictionary'''
     if isinstance(value, dict):
         for inner_key, inner_value in value.items():
             if inner_value:  # skip if None
-                output_dictionary[inner_key] = inner_value
+                output_dictionary[inner_key] = num2str(inner_value)
     else:
         if value:  # skip if None
-            output_dictionary[key] = value
+            output_dictionary[key] = num2str(value)
     return output_dictionary
 
 
