@@ -291,6 +291,99 @@ def file_in_exp(a_file, experiments):
     return found
 
 
+def validate_change(key, value, verb='patch', types=[], statuses=[], level_min=4, level_max=8):
+    '''Helper function to check proper formatting of the change request
+
+    Args:
+    - key       (required) The property to change.
+    - value     (required) The value for the property. It must match the type
+                of that field, e.g. `tags` is a list, so value is `['my_tag']`.
+                NOTE: it needs to be the uuid for 'add' or 'remove' to work properly.
+    - verb      (optional) One of the following:
+                - 'patch':   [default] Patch without checking existing value(s)
+                - 'add':     Only for lists! Extend list, if value(s) not already present
+                - 'remove':  Only for lists! Remove value(s) from list, if present
+    - types     (optional, list) Change only items of these types.
+                If empty (default), all items are changed.
+    - statuses  (optional, list) Change only items with INITIAL status in list.
+                If present, it overrides level min and max.
+    - level_min (optional, num) Change only items with INITIAL status level >= min.
+                Default is 4.
+    - level_max (optional, num) Change only items with INITIAL status level <= max.
+                Default is 8.
+
+    Output: a list of all fields in the correct order.
+    '''
+    assert (verb in ['add', 'remove', 'patch']), f'verb {verb} unknown'
+    if verb in ['add', 'remove']:
+        assert (isinstance(value, list)), 'add/remove can only be used on list fields'
+    assert (isinstance(types, list)), f'types {types} is not a list'
+    if types:
+        schema_names = [i for i in get_schema_names(my_auth).values()]
+        for t in types:
+            assert (t in schema_names), f'type {t} unknown'
+    assert (isinstance(statuses, list)), f'statuses {statuses} is not a list'
+    for s in statuses:
+        assert (s in STATUS_LEVEL), f'status {s} unknown'
+    output_list = [key, value, verb, types, statuses, level_min, level_max]
+    print(f'Changing field: {key}', f'Value: {value}', f'Action: {verb}',
+          f'Item types to change: {types if types else "all"}', sep='\n')
+    if statuses:
+        print(f'Patch only items with initial status in {statuses}')
+    else:
+        print(f'Patch only items with initial status level between {level_min}'
+              f' and {level_max} (included)\n')
+    return output_list
+
+
+def change_additional_fields(patch_body, item, item_type, item_level, change_level, changes=[]):
+    '''function to patch other properties, based on item type and CURRENT status (before update)'''
+    for change in changes:
+        key, new_values, verb, types_to_change, statuses_to_change, level_min, level_max = change
+
+        # type check
+        if types_to_change and item_type not in types_to_change:
+            continue
+
+        # status check
+        if statuses_to_change:
+            if item['status'] not in statuses_to_change:
+                continue
+        elif item_level < level_min or item_level > level_max:
+            continue
+
+        # action depends on verb
+        if verb == 'patch':
+            patch_body[key] = new_values
+        else:
+            # 'add' and 'remove' work only on lists
+            old_values = item.get(key, [])
+            assert (isinstance(old_values, list)), 'add/remove can only be used on list fields'
+            # reduce list of embedded objects to list of uuids
+            old_values = [i.get('uuid') for i in old_values if isinstance(i, dict)]
+
+            if verb == 'add':
+                patch_body[key] = [i for i in old_values]
+                patch_body[key].extend([v for v in new_values if v not in old_values])
+            elif verb == 'remove' and old_v_list:
+                patch_body[key] = [i for i in old_values if i not in new_values]
+
+    return patch_body
+
+
+STATUS_LEVEL = {
+    # standard_status
+    "released": 10, "current": 10, "restricted": 10,
+    "released to project": 9,
+    "pre-release": 8,
+    "planned": 6, "submission in progress": 6,
+    "in review by lab": 4,
+    "revoked": 0, "archived": 0, "deleted": 0, "obsolete": 0, "replaced": 0,
+    "archived to project": 0,
+    # additional file statuses
+    'to be uploaded by workflow': 4, 'uploading': 4, 'uploaded': 4,
+    'upload failed': 4, 'draft': 4, 'released to lab': 4}
+
 # get order from loadxl.py in fourfront
 ORDER = [
     'user',
