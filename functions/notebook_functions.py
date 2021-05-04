@@ -364,7 +364,7 @@ def change_additional_fields(patch_body, item, item_type, item_level, change_lev
             if verb == 'add':
                 patch_body[key] = [i for i in old_values]
                 patch_body[key].extend([v for v in new_values if v not in old_values])
-            elif verb == 'remove' and old_v_list:
+            elif verb == 'remove':
                 patch_body[key] = [i for i in old_values if i not in new_values]
 
     return patch_body
