@@ -319,9 +319,8 @@ def validate_change(key, value, verb='patch', types=[], statuses=[], level_min=4
         assert (isinstance(value, list)), 'add/remove can only be used on list fields'
     assert (isinstance(types, list)), f'types {types} is not a list'
     if types:
-        schema_names = [i for i in get_schema_names(my_auth).values()]
         for t in types:
-            assert (t in schema_names), f'type {t} unknown'
+            assert (t in ORDER), f'type {t} unknown'
     assert (isinstance(statuses, list)), f'statuses {statuses} is not a list'
     for s in statuses:
         assert (s in STATUS_LEVEL), f'status {s} unknown'
