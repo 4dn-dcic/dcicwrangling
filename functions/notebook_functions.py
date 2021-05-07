@@ -232,11 +232,12 @@ def get_schema_names_and_fields(con_key):
         if item['isAbstract'] is True:
             continue
         schema_name = item['id'].split('/')[-1][:-5]
+        schemas[schema_name] = {}
         for field, content in item['properties'].items():
-            type = content['type']
-            if type == 'array' and content['items'].get('linkTo'):
-                type = 'array_linkTo'
-            schemas[schema_name][field] = type
+            field_type = content['type']
+            if field_type == 'array' and content['items'].get('linkTo'):
+                field_type = 'array_linkTo'
+            schemas[schema_name][field] = field_type
     return schemas
 
 
@@ -308,7 +309,7 @@ def file_in_exp(a_file, experiments):
     return found
 
 
-def _validate_change(key, value, verb, types, statuses, level_min, level_max, SCHEMAS, STATUS_LEVEL):
+def validate_change_helper(key, value, verb, types, statuses, level_min, level_max, SCHEMAS, STATUS_LEVEL):
     assert verb in ['add', 'remove', 'patch'], f'verb {verb} unknown'
     if verb in ['add', 'remove']:
         assert isinstance(value, list), 'add/remove can only be used on list fields'
@@ -324,9 +325,10 @@ def _validate_change(key, value, verb, types, statuses, level_min, level_max, SC
     for s in statuses:
         assert s in STATUS_LEVEL, f'status {s} unknown'
 
+    type_msg = f'{types}' if types else f'all types with field {key}'
     status_msg = f'in {statuses}' if statuses else f'level between {level_min} and {level_max} (included)'
     print(f'\nChanging field: {key}', f'Value: {value}', f'Action: {verb}',
-          f'Item types to change: {types if types else "all"}',
+          f'Item types to change: {type_msg}',
           f'Patch only items with final status {status_msg}', sep='\n')
 
     output_values = (key, value, verb, types, statuses, level_min, level_max)
@@ -337,7 +339,6 @@ def change_additional_fields(patch_body, item, item_type, item_level, change_lev
     '''function to patch other properties, based on item type and final status (after update)'''
     for change in changes:
         (key, new_values, verb, types_to_change, statuses_to_change, level_min, level_max) = change
-
         # type check
         if types_to_change and item_type not in types_to_change:
             continue
@@ -361,11 +362,17 @@ def change_additional_fields(patch_body, item, item_type, item_level, change_lev
         if verb == 'patch':
             patch_body[key] = new_values
         else:
-            # 'add' and 'remove' work only on lists
+            if verb == 'remove' and item.get(key) is None:
+                # nothing to remove
+                continue
+
             old_values = item.get(key, [])
+            # 'add' and 'remove' work only on lists
             assert (isinstance(old_values, list)), 'add/remove can only be used on list fields'
-            # reduce list of embedded objects to list of uuids
-            old_values = [i.get('uuid') for i in old_values if isinstance(i, dict)]
+
+            if old_values and isinstance(old_values[0], dict):
+                # list of embedded objects: reduce to list of uuids
+                old_values = [i.get('uuid') for i in old_values]
 
             if verb == 'add':
                 patch_body[key] = [i for i in old_values]
