@@ -223,6 +223,23 @@ def get_schema_names(con_key):
     return schema_name
 
 
+def get_schema_names_and_fields(con_key):
+    '''Gets concrete item types from profiles and returns a dict of schema
+    names, with properties and property type (including if array_linkTo)'''
+    schemas = {}
+    profiles = ff_utils.get_metadata('/profiles/', key=con_key, add_on='frame=raw')
+    for item in profiles.values():
+        if item['isAbstract'] is True:
+            continue
+        schema_name = item['id'].split('/')[-1][:-5]
+        for field, content in item['properties'].items():
+            type = content['type']
+            if type == 'array' and content['items'].get('linkTo'):
+                type = 'array_linkTo'
+            schemas[schema_name][field] = type
+    return schemas
+
+
 def dump_results_to_json(store, folder):
     if not os.path.exists(folder):
         os.makedirs(folder)
@@ -291,65 +308,54 @@ def file_in_exp(a_file, experiments):
     return found
 
 
-def validate_change(key, value, verb='patch', types=[], statuses=[], level_min=4, level_max=8):
-    '''Helper function to check proper formatting of the change request
-
-    Args:
-    - key       (required) The property to change.
-    - value     (required) The value for the property. It must match the type
-                of that field, e.g. `tags` is a list, so value is `['my_tag']`.
-                NOTE: it needs to be the uuid for 'add' or 'remove' to work properly.
-    - verb      (optional) One of the following:
-                - 'patch':   [default] Patch without checking existing value(s)
-                - 'add':     Only for lists! Extend list, if value(s) not already present
-                - 'remove':  Only for lists! Remove value(s) from list, if present
-    - types     (optional, list) Change only items of these types.
-                If empty (default), all items are changed.
-    - statuses  (optional, list) Change only items with INITIAL status in list.
-                If present, it overrides level min and max.
-    - level_min (optional, num) Change only items with INITIAL status level >= min.
-                Default is 4.
-    - level_max (optional, num) Change only items with INITIAL status level <= max.
-                Default is 8.
-
-    Output: a list of all fields in the correct order.
-    '''
-    assert (verb in ['add', 'remove', 'patch']), f'verb {verb} unknown'
+def _validate_change(key, value, verb, types, statuses, level_min, level_max, SCHEMAS, STATUS_LEVEL):
+    assert verb in ['add', 'remove', 'patch'], f'verb {verb} unknown'
     if verb in ['add', 'remove']:
-        assert (isinstance(value, list)), 'add/remove can only be used on list fields'
-    assert (isinstance(types, list)), f'types {types} is not a list'
+        assert isinstance(value, list), 'add/remove can only be used on list fields'
+    assert isinstance(types, list), f'types {types} is not a list'
     if types:
         for t in types:
-            assert (t in ORDER), f'type {t} unknown'
-    assert (isinstance(statuses, list)), f'statuses {statuses} is not a list'
+            assert t in SCHEMAS, f'type {t} unknown'
+            assert key in SCHEMAS[t], f'{key} not found in {t} schema'
+            if SCHEMAS[t][key] == 'array_linkTo' and verb in ['add', 'remove']:
+                for v in value:
+                    assert is_uuid(v), 'add/remove sub-embedded objects works only with uuid'
+    assert isinstance(statuses, list), f'statuses {statuses} is not a list'
     for s in statuses:
-        assert (s in STATUS_LEVEL), f'status {s} unknown'
-    output_list = [key, value, verb, types, statuses, level_min, level_max]
-    print(f'Changing field: {key}', f'Value: {value}', f'Action: {verb}',
-          f'Item types to change: {types if types else "all"}', sep='\n')
-    if statuses:
-        print(f'Patch only items with initial status in {statuses}')
-    else:
-        print(f'Patch only items with initial status level between {level_min}'
-              f' and {level_max} (included)\n')
-    return output_list
+        assert s in STATUS_LEVEL, f'status {s} unknown'
+
+    status_msg = f'in {statuses}' if statuses else f'level between {level_min} and {level_max} (included)'
+    print(f'\nChanging field: {key}', f'Value: {value}', f'Action: {verb}',
+          f'Item types to change: {types if types else "all"}',
+          f'Patch only items with final status {status_msg}', sep='\n')
+
+    output_values = (key, value, verb, types, statuses, level_min, level_max)
+    return output_values
 
 
-def change_additional_fields(patch_body, item, item_type, item_level, change_level, changes=[]):
-    '''function to patch other properties, based on item type and CURRENT status (before update)'''
+def change_additional_fields(patch_body, item, item_type, item_level, change_level, change_status, changes, SCHEMAS):
+    '''function to patch other properties, based on item type and final status (after update)'''
     for change in changes:
-        key, new_values, verb, types_to_change, statuses_to_change, level_min, level_max = change
+        (key, new_values, verb, types_to_change, statuses_to_change, level_min, level_max) = change
 
         # type check
         if types_to_change and item_type not in types_to_change:
             continue
 
+        # key check
+        if key not in SCHEMAS[item_type]:
+            # not all items have fields such as `tags` or `viewable_by`
+            continue
+
         # status check
         if statuses_to_change:
-            if item['status'] not in statuses_to_change:
+            new_item_status = change_status if (item_level != 0 and item_level < change_level) else item['status']
+            if new_item_status not in statuses_to_change:
                 continue
-        elif item_level < level_min or item_level > level_max:
-            continue
+        else:
+            new_item_level = max(item_level, change_level) if item_level != 0 else 0
+            if new_item_level < level_min or new_item_level > level_max:
+                continue
 
         # action depends on verb
         if verb == 'patch':
@@ -369,19 +375,6 @@ def change_additional_fields(patch_body, item, item_type, item_level, change_lev
 
     return patch_body
 
-
-STATUS_LEVEL = {
-    # standard_status
-    "released": 10, "current": 10, "restricted": 10,
-    "released to project": 9,
-    "pre-release": 8,
-    "planned": 6, "submission in progress": 6,
-    "in review by lab": 4,
-    "revoked": 0, "archived": 0, "deleted": 0, "obsolete": 0, "replaced": 0,
-    "archived to project": 0,
-    # additional file statuses
-    'to be uploaded by workflow': 4, 'uploading': 4, 'uploaded': 4,
-    'upload failed': 4, 'draft': 4, 'released to lab': 4}
 
 # get order from loadxl.py in fourfront
 ORDER = [
