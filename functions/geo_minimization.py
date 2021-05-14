@@ -5,6 +5,7 @@ URL = 'https://data.4dnucleome.org'
 
 
 def num2str(value):
+    '''transform number to string'''
     if isinstance(value, (int, float)):
         return str(value)
     else:
@@ -24,7 +25,7 @@ def add_to_output_dict(key, value, output_dictionary):
     return output_dictionary
 
 
-def boildown_at_id(at_id):
+def atid2url(at_id):
     '''replace @id with full URL'''
     return {'url': URL + at_id}
 
@@ -111,10 +112,14 @@ def boildown_publication(publication):
 
 
 def boildown_experiments_in_set(experiments_in_set):
-    '''extract experiment_type from the first experiment in an ExpSet'''
+    '''extract series_title and experiment_type from the first Experiment in an ExpSet'''
     output_dict = {}
     experiment = experiments_in_set[0]
     output_dict['experiment_type'] = experiment['experiment_type']['display_title']
+    # GSE series_title for the ExpSet is inspired by the display_title of Experiment
+    exp_title = experiment['display_title']
+    set_title = 'Replicate set of ' + exp_title[:-12]  # remove Exp accession
+    output_dict['series_title'] = set_title
     # output_dict['organism_id'] = get_organism_from_experiment(experiment)
     return output_dict
 
