@@ -98,8 +98,8 @@ def boildown_publication(publication):
 
 
 def boildown_experiments_in_set(experiments_in_set):
-    '''Extract list of Experiments with replicate information, experiment type(s)
-    and series_title. This works both for replicate or custom sets.'''
+    '''Extract list of Experiments with replicate information and experiment
+    type(s). This works both for replicate or custom sets.'''
     output_dict = {}
     replicates = []
     exp_ids = []
@@ -120,14 +120,19 @@ def boildown_experiments_in_set(experiments_in_set):
     unique_exp_types = list(set(exp_types))
     output_dict['experiment_type'] = ', '.join(unique_exp_types)
 
-    # GSE series_title for the ExpSet
-    if len(unique_exp_types) == 1:
-        # ExpSet title is the same as Exp title, if only one exp type
-        exp_title = experiments_in_set[0]['display_title']
-        set_title = 'Experiment Set of ' + exp_title[:-12]  # remove Exp accession
-        output_dict['series_title'] = set_title
-
     return output_dict, exp_ids
+
+
+def get_series_title(experiment_set):
+    '''Generates the series_title field for the ExpSet (replicate or custom)'''
+    if experiment_set['experimentset_type'] == 'replicate':
+        # Use for ExpSet the exp summary of the first experimental replicate
+        exp_summary = experiment_set['experiments_in_set'][0]['display_title'][:-15]
+        set_summary = 'Replicate experiments of ' + exp_summary
+    elif experiment_set['experimentset_type'] == 'custom':
+        # custom sets can have heterogeneous experiments: use description
+        set_summary = experiment_set['description']
+    return experiment_set['accession'] + ' - ' + set_summary
 
 
 def boildown_organism(organism_object):
