@@ -177,10 +177,29 @@ exp2pipeline = {
 
 
 def boildown_experiment_type(experiment_type):
-    '''returns experiment_type and data_processing'''
+    '''Returns experiment_type, library_strategy and data_processing'''
     exp_type_dict = {}
     exp_type = experiment_type['title']
+    # Experiment type
     exp_type_dict['experiment_type'] = exp_type
+    # Library strategy
+    assay_mapping = {
+        # TODO: This is a controlled vocabulary from GEO. Currently (May 2021)
+        # all 4DN experiment types not present in GEO fall in the category
+        # "OTHER". Check again in the future in case new experiments are added.
+        'Hi-C': 'Hi-C',
+        'IP-based 3C': 'ChIA-PET',
+        'ATAC-seq': 'ATAC-Seq',
+        'ChIP-seq': 'ChIP-Seq',
+        'RNA-seq': 'RNA-Seq',
+    }
+    if experiment_type['assay_subclass_short'] in assay_mapping:
+        exp_type_dict['library_strategy'] = assay_mapping[experiment_type['assay_subclass_short']]
+    elif exp_type in assay_mapping:
+        exp_type_dict['library_strategy'] = assay_mapping[exp_type]
+    else:
+        exp_type_dict['library_strategy'] = 'OTHER'
+    # Data processing
     pipeline = exp2pipeline.get(exp_type)
     if pipeline:
         pipeline_doc = pipeline_pages.get(pipeline)
