@@ -286,6 +286,7 @@ def boildown_wfr_outputs(wfr_outputs):
 file_simple_values = [
     'paired_end',  # raw_file
     'accession',
+    'description',  # can include data_processing if not 4DN standard pipeline
     'display_title',  # raw_file
     'file_type',
     # 'file_type_detailed',  # has also file_format['display_title']
