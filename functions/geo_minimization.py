@@ -4,20 +4,28 @@ Common functions for GEO Minimization of the JSON objects
 URL = 'https://data.4dnucleome.org'
 
 
+def num2str(value):
+    '''transform number to string'''
+    if isinstance(value, (int, float)):
+        return str(value)
+    else:
+        return value
+
+
 def add_to_output_dict(key, value, output_dictionary):
     '''add to the output_dictionary either a single key:value pair or
     all the key:values if value is a dictionary'''
     if isinstance(value, dict):
         for inner_key, inner_value in value.items():
             if inner_value:  # skip if None
-                output_dictionary[inner_key] = inner_value
+                output_dictionary[inner_key] = num2str(inner_value)
     else:
         if value:  # skip if None
-            output_dictionary[key] = value
+            output_dictionary[key] = num2str(value)
     return output_dictionary
 
 
-def boildown_at_id(at_id):
+def atid2url(at_id):
     '''replace @id with full URL'''
     return {'url': URL + at_id}
 
@@ -79,20 +87,6 @@ def boildown_external_references(external_references_list):
 
 
 # additional functions for ExpSet
-def boildown_replicate_exps(replicate_exps):
-    '''return list of dict with Exp accession, biorep and techrep'''
-    replicates = []
-    exp_ids = []
-    for replicate in replicate_exps:
-        replicates.append({
-            'replicate': replicate['replicate_exp']['accession'],
-            'biological_replicate_number': replicate['bio_rep_no'],
-            'technical_replicate_number': replicate['tec_rep_no']
-        })
-        exp_ids.append(replicate['replicate_exp']['@id'])
-    return replicates, exp_ids
-
-
 def boildown_publication(publication):
     '''returns a dictionary with one key
     produced_in_pub: PMID if present, otherwise series_citation: display_title'''
@@ -104,12 +98,41 @@ def boildown_publication(publication):
 
 
 def boildown_experiments_in_set(experiments_in_set):
-    '''extract experiment_type from the first experiment in an ExpSet'''
+    '''Extract list of Experiments with replicate information and experiment
+    type(s). This works both for replicate or custom sets.'''
     output_dict = {}
-    experiment = experiments_in_set[0]
-    output_dict['experiment_type'] = experiment['experiment_type']['display_title']
-    # output_dict['organism_id'] = get_organism_from_experiment(experiment)
-    return output_dict
+    replicates = []
+    exp_ids = []
+    exp_types = []
+    for exp in experiments_in_set:
+        replicates.append({
+            'replicate': exp['accession'],
+            # get rep num form the first raw file's track_and_facet_info
+            'replicate_number': exp['files'][0]['track_and_facet_info'].get('replicate_info', '')
+        })
+        exp_ids.append(exp['@id'])
+        exp_types.append(exp['experiment_type']['display_title'])
+
+    # Replicates
+    output_dict['replicate_exps'] = replicates
+
+    # Experiment Type
+    unique_exp_types = list(set(exp_types))
+    output_dict['experiment_type'] = ', '.join(unique_exp_types)
+
+    return output_dict, exp_ids
+
+
+def get_series_title(experiment_set):
+    '''Generates the series_title field for the ExpSet (replicate or custom)'''
+    if experiment_set['experimentset_type'] == 'replicate':
+        # Use for ExpSet the exp summary of the first experimental replicate
+        exp_summary = experiment_set['experiments_in_set'][0]['display_title'][:-15]
+        set_summary = 'Replicate experiments of ' + exp_summary
+    elif experiment_set['experimentset_type'] == 'custom':
+        # custom sets can have heterogeneous experiments: use description
+        set_summary = experiment_set['description']
+    return experiment_set['accession'] + ' - ' + set_summary
 
 
 def boildown_organism(organism_object):
@@ -154,10 +177,29 @@ exp2pipeline = {
 
 
 def boildown_experiment_type(experiment_type):
-    '''returns experiment_type and data_processing'''
+    '''Returns experiment_type, library_strategy and data_processing'''
     exp_type_dict = {}
     exp_type = experiment_type['title']
+    # Experiment type
     exp_type_dict['experiment_type'] = exp_type
+    # Library strategy
+    assay_mapping = {
+        # TODO: This is a controlled vocabulary from GEO. Currently (May 2021)
+        # all 4DN experiment types not present in GEO fall in the category
+        # "OTHER". Check again in the future in case new experiments are added.
+        'Hi-C': 'Hi-C',
+        'IP-based 3C': 'ChIA-PET',
+        'ATAC-seq': 'ATAC-Seq',
+        'ChIP-seq': 'ChIP-Seq',
+        'RNA-seq': 'RNA-Seq',
+    }
+    if experiment_type['assay_subclass_short'] in assay_mapping:
+        exp_type_dict['library_strategy'] = assay_mapping[experiment_type['assay_subclass_short']]
+    elif exp_type in assay_mapping:
+        exp_type_dict['library_strategy'] = assay_mapping[exp_type]
+    else:
+        exp_type_dict['library_strategy'] = 'OTHER'
+    # Data processing
     pipeline = exp2pipeline.get(exp_type)
     if pipeline:
         pipeline_doc = pipeline_pages.get(pipeline)
@@ -172,6 +214,15 @@ def boildown_exp_categorizer(exp_categorizer_object):
     '''This is a calcprop for all experiments'''
     output = exp_categorizer_object.get('combined', '')
     return output
+
+
+def boildown_experiment_relations(experiment_relations):
+    relations = []
+    for rel in experiment_relations:
+        rel_type = rel['relationship_type']
+        rel_item = rel['experiment']['@id'].split('/')[2]
+        relations.append(rel_type + ": " + rel_item)
+    return ', '.join(relations)
 
 
 def boildown_biosample_name(biosample):
@@ -235,6 +286,7 @@ def boildown_wfr_outputs(wfr_outputs):
 file_simple_values = [
     'paired_end',  # raw_file
     'accession',
+    'description',  # can include data_processing if not 4DN standard pipeline
     'display_title',  # raw_file
     'file_type',
     # 'file_type_detailed',  # has also file_format['display_title']
