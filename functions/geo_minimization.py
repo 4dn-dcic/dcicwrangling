@@ -87,20 +87,6 @@ def boildown_external_references(external_references_list):
 
 
 # additional functions for ExpSet
-def boildown_replicate_exps(replicate_exps):
-    '''return list of dict with Exp accession, biorep and techrep'''
-    replicates = []
-    exp_ids = []
-    for replicate in replicate_exps:
-        replicates.append({
-            'replicate': replicate['replicate_exp']['accession'],
-            'biological_replicate_number': replicate['bio_rep_no'],
-            'technical_replicate_number': replicate['tec_rep_no']
-        })
-        exp_ids.append(replicate['replicate_exp']['@id'])
-    return replicates, exp_ids
-
-
 def boildown_publication(publication):
     '''returns a dictionary with one key
     produced_in_pub: PMID if present, otherwise series_citation: display_title'''
@@ -112,16 +98,36 @@ def boildown_publication(publication):
 
 
 def boildown_experiments_in_set(experiments_in_set):
-    '''extract series_title and experiment_type from the first Experiment in an ExpSet'''
+    '''Extract list of Experiments with replicate information, experiment type(s)
+    and series_title. This works both for replicate or custom sets.'''
     output_dict = {}
-    experiment = experiments_in_set[0]
-    output_dict['experiment_type'] = experiment['experiment_type']['display_title']
-    # GSE series_title for the ExpSet is inspired by the display_title of Experiment
-    exp_title = experiment['display_title']
-    set_title = 'Replicate set of ' + exp_title[:-12]  # remove Exp accession
-    output_dict['series_title'] = set_title
-    # output_dict['organism_id'] = get_organism_from_experiment(experiment)
-    return output_dict
+    replicates = []
+    exp_ids = []
+    exp_types = []
+    for exp in experiments_in_set:
+        replicates.append({
+            'replicate': exp['accession'],
+            # get rep num form the first raw file's track_and_facet_info
+            'replicate_number': exp['files'][0]['track_and_facet_info'].get('replicate_info', '')
+        })
+        exp_ids.append(exp['@id'])
+        exp_types.append(exp['experiment_type']['display_title'])
+
+    # Replicates
+    output_dict['replicate_exps'] = replicates
+
+    # Experiment Type
+    unique_exp_types = list(set(exp_types))
+    output_dict['experiment_type'] = ', '.join(unique_exp_types)
+
+    # GSE series_title for the ExpSet
+    if len(unique_exp_types) == 1:
+        # ExpSet title is the same as Exp title, if only one exp type
+        exp_title = experiments_in_set[0]['display_title']
+        set_title = 'Experiment Set of ' + exp_title[:-12]  # remove Exp accession
+        output_dict['series_title'] = set_title
+
+    return output_dict, exp_ids
 
 
 def boildown_organism(organism_object):
