@@ -130,8 +130,9 @@ def get_series_title(experiment_set):
         exp_summary = experiment_set['experiments_in_set'][0]['display_title'][:-15]
         set_summary = 'Replicate experiments of ' + exp_summary
     elif experiment_set['experimentset_type'] == 'custom':
-        # custom sets can have heterogeneous experiments: use description
-        set_summary = experiment_set['description']
+        # custom sets can have heterogeneous experiments
+        # set_summary = experiment_set['description']
+        set_summary = experiment_set.get('dataset_label', '') + ' - ' + experiment_set.get('condition', '')
     return experiment_set['accession'] + ' - ' + set_summary
 
 
