@@ -128,12 +128,12 @@ def get_series_title(experiment_set):
     if experiment_set['experimentset_type'] == 'replicate':
         # Use for ExpSet the exp summary of the first experimental replicate
         exp_summary = experiment_set['experiments_in_set'][0]['display_title'][:-15]
-        set_summary = 'Replicate experiments of ' + exp_summary
+        set_summary = ' - ' + 'Replicate experiments of ' + exp_summary
     elif experiment_set['experimentset_type'] == 'custom':
         # custom sets can have heterogeneous experiments
-        # set_summary = experiment_set['description']
-        set_summary = experiment_set.get('dataset_label', '') + ' - ' + experiment_set.get('condition', '')
-    return experiment_set['accession'] + ' - ' + set_summary
+        set_summary = ' - ' + experiment_set['dataset_label'] if experiment_set.get('dataset_label') else ''
+        set_summary += ' - ' + experiment_set['condition'] if experiment_set.get('condition') else ''
+    return experiment_set['accession'] + set_summary
 
 
 def boildown_organism(organism_object):
@@ -177,8 +177,27 @@ exp2pipeline = {
 }
 
 
+def data_processing(experiment_object, OVERRIDE_DATA_PROCESSING):
+    '''Return a string for data processing. If 4DN pipeline, this is a link to
+    the documentation. It can be overridden if needed.'''
+    # TODO: If supplementary files are included, automate how lab-provided
+    # processing description is reported. Also consider mixed cases, e.g.
+    # when both processed files and supplementary files are included.
+    if OVERRIDE_DATA_PROCESSING:
+        return OVERRIDE_DATA_PROCESSING
+    processing = ''
+    exp_type = experiment_object['experiment_type']['title']
+    pipeline = exp2pipeline.get(exp_type)
+    if pipeline:
+        pipeline_doc = pipeline_pages.get(pipeline)
+        assert (pipeline_doc), 'Missing {} documentation page'.format(pipeline)
+        processing = URL + '/resources/data-analysis/' + pipeline_doc
+    assert (processing), 'Missing data_processing information'
+    return processing
+
+
 def boildown_experiment_type(experiment_type):
-    '''Returns experiment_type, library_strategy and data_processing'''
+    '''Returns experiment_type and library_strategy'''
     exp_type_dict = {}
     exp_type = experiment_type['title']
     # Experiment type
@@ -200,14 +219,6 @@ def boildown_experiment_type(experiment_type):
         exp_type_dict['library_strategy'] = assay_mapping[exp_type]
     else:
         exp_type_dict['library_strategy'] = 'OTHER'
-    # Data processing
-    pipeline = exp2pipeline.get(exp_type)
-    if pipeline:
-        pipeline_doc = pipeline_pages.get(pipeline)
-        if pipeline_doc:
-            exp_type_dict['data_processing'] = URL + '/resources/data-analysis/' + pipeline_doc
-        else:
-            print('WARNING: missing {} documentation page'.format(pipeline))
     return exp_type_dict
 
 
