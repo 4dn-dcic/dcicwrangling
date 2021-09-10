@@ -221,6 +221,20 @@ def boildown_experiment_type(experiment_type):
     return exp_type_dict
 
 
+def boildown_molecule(experiment_object, exported_experiment):
+    '''molecule is required in GEO. We have such field but it is often empty.
+    There are different options for RNA-seq, while for other experiment types
+    it is typically "genomic DNA"'''
+    if exported_experiment.get('molecule'):
+        # molecule already found in the metadata
+        molecule = exported_experiment['molecule']
+    elif exported_experiment['library_strategy'] in ['Hi-C', 'ChIA-PET', 'ATAC-Seq', 'ChIP-Seq']:
+        molecule = 'genomic DNA'
+    elif exported_experiment['library_strategy'] in ['RNA-Seq', 'OTHER']:  # # TODO: this should be refined
+        raise Exception('Specify which molecule is sequenced in the Experiment metadata')
+    return molecule
+
+
 def boildown_exp_categorizer(exp_categorizer_object):
     '''This is a calcprop for all experiments'''
     output = exp_categorizer_object.get('combined', '')
