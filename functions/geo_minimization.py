@@ -204,10 +204,13 @@ def boildown_experiment_type(experiment_type):
         # all 4DN experiment types not present in GEO fall in the category
         # "OTHER". Check again in the future in case new experiments are added.
         'Hi-C': 'Hi-C',
+        'Hi-C (single cell)': 'Hi-C',
         'IP-based 3C': 'ChIA-PET',
         'ATAC-seq': 'ATAC-Seq',
+        'sci-ATAC-seq': 'ATAC-Seq',
         'ChIP-seq': 'ChIP-Seq',
         'RNA-seq': 'RNA-Seq',
+        'sci-RNA-seq': 'RNA-Seq',
     }
     if experiment_type['assay_subclass_short'] in assay_mapping:
         exp_type_dict['library_strategy'] = assay_mapping[experiment_type['assay_subclass_short']]
