@@ -180,7 +180,8 @@ def data_processing(experiment_object, OVERRIDE_DATA_PROCESSING):
     # processing description is reported. Also consider mixed cases, e.g.
     # when both processed files and supplementary files are included.
     if OVERRIDE_DATA_PROCESSING:
-        return OVERRIDE_DATA_PROCESSING
+        formatted_string = OVERRIDE_DATA_PROCESSING.replace("\n", "!Sample_data_processing = ")
+        return formatted_string
     processing = ''
     exp_type = experiment_object['experiment_type']['title']
     pipeline = exp2pipeline.get(exp_type)
