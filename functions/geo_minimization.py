@@ -308,6 +308,36 @@ def boildown_wfr_outputs(wfr_outputs):
     return wfr_dict
 
 
+def validate_instrument_enum(instrument):
+    '''Instrument field is an enum on GEO, but not on 4DN. This function checks
+    that the value is accepted for GEO submission. In case of errors, check
+    on GEO if this list needs to be updated.'''
+    instrument_enum = [
+        "Illumina Genome Analyzer",
+        "Illumina Genome Analyzer II",
+        "Illumina Genome Analyzer IIx",
+        "Illumina HiSeq 1000",
+        "Illumina HiSeq 1500",
+        "Illumina HiSeq 2000",
+        "Illumina HiSeq 2500",
+        "Illumina HiSeq 3000",
+        "Illumina HiSeq 4000",
+        "Illumina MiSeq",
+        "Illumina HiScanSQ",
+        "Illumina MiniSeq",
+        "Illumina NextSeq 500",
+        "Illumina NovaSeq 6000",
+        "Illumina iSeq 100",
+        "NextSeq 550",
+        "NextSeq 1000",
+        "NextSeq 2000",
+        "HiSeq X Ten",
+        "HiSeq X Five",
+    ]
+    assert (instrument in instrument_enum), "Instrument is not one of the enum accepted by GEO"
+    return instrument
+
+
 file_simple_values = [
     'paired_end',  # raw_file
     'accession',
@@ -316,13 +346,13 @@ file_simple_values = [
     'file_type',
     # 'file_type_detailed',  # has also file_format['display_title']
     'file_classification',
-    'instrument',  # raw_file
     'genome_assembly',
     'md5sum',  # raw_file
 ]
 
 file_function_dispatch = {
     'file_format': boildown_title,
+    'instrument': validate_instrument_enum,
     'related_files': boildown_related_files,
     'quality_metric': boildown_quality_metric,
     'workflow_run_outputs': boildown_wfr_outputs,
