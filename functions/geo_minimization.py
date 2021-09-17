@@ -180,7 +180,8 @@ def data_processing(experiment_object, OVERRIDE_DATA_PROCESSING):
     # processing description is reported. Also consider mixed cases, e.g.
     # when both processed files and supplementary files are included.
     if OVERRIDE_DATA_PROCESSING:
-        return OVERRIDE_DATA_PROCESSING
+        formatted_string = OVERRIDE_DATA_PROCESSING.replace("\n", "!Sample_data_processing = ")
+        return formatted_string
     processing = ''
     exp_type = experiment_object['experiment_type']['title']
     pipeline = exp2pipeline.get(exp_type)
@@ -204,10 +205,13 @@ def boildown_experiment_type(experiment_type):
         # all 4DN experiment types not present in GEO fall in the category
         # "OTHER". Check again in the future in case new experiments are added.
         'Hi-C': 'Hi-C',
+        'Hi-C (single cell)': 'Hi-C',
         'IP-based 3C': 'ChIA-PET',
         'ATAC-seq': 'ATAC-Seq',
+        'sci-ATAC-seq': 'ATAC-Seq',
         'ChIP-seq': 'ChIP-Seq',
         'RNA-seq': 'RNA-Seq',
+        'sci-RNA-seq': 'RNA-Seq',
     }
     if experiment_type['assay_subclass_short'] in assay_mapping:
         exp_type_dict['library_strategy'] = assay_mapping[experiment_type['assay_subclass_short']]
@@ -216,6 +220,20 @@ def boildown_experiment_type(experiment_type):
     else:
         exp_type_dict['library_strategy'] = 'OTHER'
     return exp_type_dict
+
+
+def boildown_molecule(experiment_object, exported_experiment):
+    '''molecule is required in GEO. We have such field but it is often empty.
+    There are different options for RNA-seq, while for other experiment types
+    it is typically "genomic DNA"'''
+    if exported_experiment.get('molecule'):
+        # molecule already found in the metadata
+        molecule = exported_experiment['molecule']
+    elif exported_experiment['library_strategy'] in ['Hi-C', 'ChIA-PET', 'ATAC-Seq', 'ChIP-Seq']:
+        molecule = 'genomic DNA'
+    elif exported_experiment['library_strategy'] in ['RNA-Seq', 'OTHER']:  # # TODO: this should be refined
+        raise Exception('Specify which molecule is sequenced in the Experiment metadata')
+    return molecule
 
 
 def boildown_exp_categorizer(exp_categorizer_object):
@@ -291,6 +309,36 @@ def boildown_wfr_outputs(wfr_outputs):
     return wfr_dict
 
 
+def validate_instrument_enum(instrument):
+    '''Instrument field is an enum on GEO, but not on 4DN. This function checks
+    that the value is accepted for GEO submission. In case of errors, check
+    on GEO if this list needs to be updated.'''
+    instrument_enum = [
+        "Illumina Genome Analyzer",
+        "Illumina Genome Analyzer II",
+        "Illumina Genome Analyzer IIx",
+        "Illumina HiSeq 1000",
+        "Illumina HiSeq 1500",
+        "Illumina HiSeq 2000",
+        "Illumina HiSeq 2500",
+        "Illumina HiSeq 3000",
+        "Illumina HiSeq 4000",
+        "Illumina MiSeq",
+        "Illumina HiScanSQ",
+        "Illumina MiniSeq",
+        "Illumina NextSeq 500",
+        "Illumina NovaSeq 6000",
+        "Illumina iSeq 100",
+        "NextSeq 550",
+        "NextSeq 1000",
+        "NextSeq 2000",
+        "HiSeq X Ten",
+        "HiSeq X Five",
+    ]
+    assert (instrument in instrument_enum), "Instrument is not one of the enum accepted by GEO"
+    return instrument
+
+
 file_simple_values = [
     'paired_end',  # raw_file
     'accession',
@@ -299,13 +347,13 @@ file_simple_values = [
     'file_type',
     # 'file_type_detailed',  # has also file_format['display_title']
     'file_classification',
-    'instrument',  # raw_file
     'genome_assembly',
     'md5sum',  # raw_file
 ]
 
 file_function_dispatch = {
     'file_format': boildown_title,
+    'instrument': validate_instrument_enum,
     'related_files': boildown_related_files,
     'quality_metric': boildown_quality_metric,
     'workflow_run_outputs': boildown_wfr_outputs,
