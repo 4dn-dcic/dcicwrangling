@@ -93,32 +93,6 @@ def boildown_publication(publication):
     return pub
 
 
-def boildown_experiments_in_set(experiments_in_set):
-    '''Extract list of Experiments with replicate information and experiment
-    type(s). This works both for replicate or custom sets.'''
-    output_dict = {}
-    replicates = []
-    exp_ids = []
-    exp_types = []
-    for exp in experiments_in_set:
-        replicates.append({
-            'replicate': exp['accession'],
-            # get rep num form the first raw file's track_and_facet_info
-            'replicate_number': exp['files'][0]['track_and_facet_info'].get('replicate_info', '')
-        })
-        exp_ids.append(exp['@id'])
-        exp_types.append(exp['experiment_type']['display_title'])
-
-    # Replicates
-    output_dict['replicate_exps'] = replicates
-
-    # Experiment Type
-    unique_exp_types = list(set(exp_types))
-    output_dict['experiment_type'] = ', '.join(unique_exp_types)
-
-    return output_dict, exp_ids
-
-
 def get_series_title(experiment_set):
     '''Generates the series_title field for the ExpSet (replicate or custom)'''
     if experiment_set['experimentset_type'] == 'replicate':
