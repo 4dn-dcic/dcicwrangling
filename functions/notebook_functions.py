@@ -375,10 +375,13 @@ def change_additional_fields(patch_body, item, item_type, item_level, change_lev
                 old_values = [i.get('uuid') for i in old_values]
 
             if verb == 'add':
-                patch_body[key] = [i for i in old_values]
-                patch_body[key].extend([v for v in new_values if v not in old_values])
+                new_unique_values = [v for v in new_values if v not in old_values]
+                if len(new_unique_values) > 0:
+                    patch_body[key] = [i for i in old_values] + new_unique_values
             elif verb == 'remove':
-                patch_body[key] = [i for i in old_values if i not in new_values]
+                remaining_old_values = [i for i in old_values if i not in new_values]
+                if remaining_old_values != old_values:
+                    patch_body[key] = remaining_old_values
 
     return patch_body
 
