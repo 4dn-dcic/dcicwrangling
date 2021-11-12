@@ -88,10 +88,10 @@ def step_settings(step_name, my_organism, attribution, params={}):
         },
         {
             "wf_name": "bedGraphToBigWig",
-            "wf_uuid": "667b14a7-a47e-4857-adf1-12a6393c4b8e",
+            "wf_uuid": "68d412a1-b78e-4101-b353-2f3da6272529",
             "parameters": {},
             "config": {
-                "instance_type": "t2.micro",
+                "instance_type": "t3.small",
                 "EBS_optimized": False,
                 "ebs_size": 10,
                 "ebs_type": "gp2",
@@ -284,6 +284,103 @@ def step_settings(step_name, my_organism, attribution, params={}):
                     'genome_assembly': genome,
                     'file_type': 'read positions',
                     'description': 'Merged file, positions of aligned reads in bed format, one line per read mate'}
+            }
+        },
+        {
+            "wf_name": "insulation-scores-and-boundaries-caller",
+            "wf_uuid": "dc9efc2d-baa5-4304-b72b-14610d8d5fc4",
+            "parameters": {"binsize": -1, "windowsize": 100000},
+            "config": {'mem': 32},
+            'custom_pf_fields': {
+                'bwfile': {
+                    'genome_assembly': genome,
+                    'file_type': 'insulation score-diamond',
+                    'description': 'Diamond insulation scores calls on Hi-C contact matrices'},
+                'bedfile': {
+                    'genome_assembly': genome,
+                    'file_type': 'boundaries',
+                    'description': 'Boundaries calls on Hi-C contact matrices'
+                }
+            }
+        },
+        {
+            "wf_name": "compartments-caller",
+            "wf_uuid": "d07fa5d4-8721-403e-89b5-e8f323ac9ece",
+            "parameters": {"binsize": 250000, "contact_type": "cis"},
+            "config": {'mem': 4, 'cpu': 1, 'ebs_size': '1.1x', 'EBS_optimized': 'false'},
+            'custom_pf_fields': {
+                'bwfile': {
+                    'genome_assembly': genome,
+                    'file_type': 'compartments',
+                    'description': 'Compartments signals on Hi-C contact matrices'
+                }
+            }
+        },
+        {
+            "wf_name": "mcoolQC",
+            "wf_uuid": "0bf9f47a-dec1-4324-9b41-fa183880a7db",
+            "overwrite_input_extra": False,
+            "config": {"ebs_size": 10, "instance_type": "c5ad.2xlarge"}
+        },
+        {
+            "wf_name": "cut_and_run_workflow",
+            "wf_uuid": "c5db38be-f139-4157-9832-398bda2c62d2",
+            "parameters": {
+                "nthreads_trim": 4,
+                "nthreads_aln": 4
+            },
+            "config": {'mem': 8, 'cpu': 4, 'ebs_size': 28},
+            "custom_pf_fields": {
+                "out_bam": {
+                    "genome_assembly": genome,
+                    "file_type": "read positions",
+                    "description": "Alignment output file from CUT&RUN"
+                    },
+                "out_bedpe": {
+                    "genome_assembly": genome,
+                    "file_type": "intermediate file",
+                    "description": "Filtered reads, output file from CUT&RUN"
+                }
+            }
+        },
+        {
+            "wf_name": "cut_and_run_ctl_workflow",
+            "wf_uuid": "04895a25-b609-4fc8-b0d5-9dd9e45d9237",
+            "parameters": {
+                "nthreads_trim": 4,
+                "nthreads_aln": 4
+            },
+            "config": {'mem': 8, 'cpu': 4, 'ebs_size': 20},
+            "custom_pf_fields": {
+                "out_bam": {
+                    "genome_assembly": genome,
+                    "file_type": "read positions",
+                    "description": "Alignment output file from CUT&RUN",
+                    'disable_wfr_inputs': True
+                },
+                "out_bedpe": {
+                    "genome_assembly": genome,
+                    "file_type": "intermediate file",
+                    "description": "Filtered reads, output file from CUT&RUN",
+                    'disable_wfr_inputs': True
+                }
+            }
+        },
+        {
+            "wf_name": "cut_and_run_peaks",
+            "wf_uuid": "b43bcc4e-d566-4fbf-a0bb-375a2ad517d8",
+            "config": {'mem': 16, 'cpu': 2, 'ebs_size': 36},
+            'custom_pf_fields': {
+                "out_bedg": {
+                    "genome_assembly": genome,
+                    "file_type": "peaks",
+                    "description": "Peaks output file from CUT&RUN"
+                },
+                "out_bw": {
+                    "genome_assembly": genome,
+                    "file_type": "signal fold change",
+                    "description": "Signal track from CUT&RUN"
+                }
             }
         }
     ]
