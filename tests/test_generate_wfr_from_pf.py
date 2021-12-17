@@ -253,6 +253,32 @@ def test_create_wfr_meta_only_json_no_workflow_args(mocker, auth, prov_workflow,
     assert 'output_files' not in wfr_json
 
 
+def test_add_notes_to_tsv_success(mocker, auth, fp_data):
+    mocker.patch('scripts.generate_wfr_from_pf.patch_metadata', return_value={'status': 'success'})
+    res = gw.add_notes_to_tsv(fp_data, auth)
+    assert res == 'SUCCESS'
+
+
+def test_add_notes_to_tsv_skip(auth, fp_data):
+    note_txt = "This file contains processed results performed outside of the 4DN-DCIC standardized pipelines. The file and the information about its provenance, i.e. which files were used as input to generate this output was provided by or done in collaboration with the lab that did the experiments to generate the raw data. For more information about the specific analysis performed, please contact the submitting lab or refer to the relevant publication if available."
+    fp_data['notes_to_tsv'] = [note_txt]
+    res = gw.add_notes_to_tsv(fp_data, auth)
+    assert res == 'SKIP'
+
+
+def test_add_notes_to_tsv_patch_error(mocker, auth, fp_data):
+    with pytest.raises(Exception):
+        mocker.patch('scripts.generate_wfr_from_pf.patch_metadata', return_value='')
+        res = gw.add_notes_to_tsv(fp_data, auth)
+        assert res == 'ERROR'
+
+
+def test_add_notes_to_tsv_res_error(mocker, auth, fp_data):
+    mocker.patch('scripts.generate_wfr_from_pf.patch_metadata', return_value={'status': 'error'})
+    res = gw.add_notes_to_tsv(fp_data, auth)
+    assert res == 'ERROR'
+
+
 def test_wfr_get_args_required_default():
     defaults = {
         'dbupdate': False,
@@ -351,6 +377,7 @@ def test_wfr_main_dbupdate(mocker, capsys, mocked_args_dbupd, auth,
                  side_effect=[prov_workflow, fp_data, infiles[0], infiles[1]])
     mocker.patch('scripts.generate_wfr_from_pf.create_wfr_meta_only_json', return_value=wfr_out_json)
     mocker.patch('scripts.generate_wfr_from_pf.post_metadata', return_value='SUCCESS')
+    mocker.patch('scripts.generate_wfr_from_pf.add_notes_to_tsv', return_value='SUCCESS')
     gw.main()
     out = capsys.readouterr()[0]
     assert out.startswith('SUCCESS')
