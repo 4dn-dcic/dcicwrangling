@@ -1,7 +1,7 @@
 import sys
 import argparse
 from datetime import datetime
-from dcicutils.ff_utils import get_authentication_with_server, get_metadata, post_metadata
+from dcicutils.ff_utils import get_authentication_with_server, get_metadata, post_metadata, patch_metadata
 from functions import script_utils as scu
 '''Generate provenance workflow_runs for processed files using the
     information in the 'produced_from' field.
@@ -114,6 +114,27 @@ def create_wfr_meta_only_json(auth, workflow, inputs, outputs, alias=None, descr
     return wfr_json
 
 
+def add_notes_to_tsv(file_meta, auth):
+    """ adds a notes to tsv with the canned value below to the processed file
+        returns success, error or skip if the value already exists
+    """
+    note_txt = "This file contains processed results performed outside of the 4DN-DCIC standardized pipelines. The file and the information about its provenance, i.e. which files were used as input to generate this output was provided by or done in collaboration with the lab that did the experiments to generate the raw data. For more information about the specific analysis performed, please contact the submitting lab or refer to the relevant publication if available."
+    n2tsv = file_meta.get('notes_to_tsv', [])
+    for note in n2tsv:
+        if note_txt in note:
+            return "SKIP"
+    n2tsv.append(note_txt)
+    patch = {'notes_to_tsv': n2tsv}
+    try:
+        pres = patch_metadata(patch, file_meta.get('uuid'), auth)
+    except Exception as e:
+        print(e)
+        return "ERROR"
+    if pres.get('status') == 'success':
+        return "SUCCESS"
+    return "ERROR"
+
+
 def main():
     args = get_args(sys.argv[1:])
     try:
@@ -138,7 +159,10 @@ def main():
                 print(wfr_json)
             else:
                 res = post_metadata(wfr_json, 'workflow_run_awsem', auth)
+                # and add a notes_to_tsv to the file
+                patchstatus = add_notes_to_tsv(file_info, auth)
                 print(res)
+                print(patchstatus)
 
 
 if __name__ == '__main__':  # pragma: no cover
