@@ -309,7 +309,8 @@ def validate_instrument_enum(instrument):
         "HiSeq X Ten",
         "HiSeq X Five",
     ]
-    assert (instrument in instrument_enum), "Instrument is not one of the enum accepted by GEO"
+    if instrument not in instrument_enum:
+        print(f"WARNING: {instrument} Instrument is not one of the enum accepted by GEO")
     return instrument
 
 
