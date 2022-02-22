@@ -336,7 +336,7 @@ file_function_dispatch = {
 
 
 def boildown_file(file_object):
-    '''Works with raw and processed files'''
+    '''Works with raw, processed and reference files'''
     file_dict = {}
     for key, value in file_object.items():
         export_value = None
