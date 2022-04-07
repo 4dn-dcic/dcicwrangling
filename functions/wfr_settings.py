@@ -285,6 +285,153 @@ def step_settings(step_name, my_organism, attribution, params={}):
                     'file_type': 'read positions',
                     'description': 'Merged file, positions of aligned reads in bed format, one line per read mate'}
             }
+        },
+        {
+            "app_name": "insulation-scores-and-boundaries-caller",
+            "workflow_uuid": "dc9efc2d-baa5-4304-b72b-14610d8d5fc4",
+            "parameters": {"binsize": -1, "windowsize": 100000},
+            "config": {'mem': 32},
+            'custom_pf_fields': {
+                'bwfile': {
+                    'genome_assembly': genome,
+                    'file_type': 'insulation score-diamond',
+                    'description': 'Diamond insulation scores calls on Hi-C contact matrices'},
+                'bedfile': {
+                    'genome_assembly': genome,
+                    'file_type': 'boundaries',
+                    'description': 'Boundaries calls on Hi-C contact matrices'}
+            }
+        },
+        {
+            "app_name": "compartments-caller",
+            "workflow_uuid": "d07fa5d4-8721-403e-89b5-e8f323ac9ece",
+            "parameters": {"binsize": 250000, "contact_type": "cis"},
+            "config": {'mem': 4, 'cpu': 1, 'ebs_size': '1.1x', 'EBS_optimized': 'false'},
+            'custom_pf_fields': {
+                'bwfile': {
+                    'genome_assembly': genome,
+                    'file_type': 'compartments',
+                    'description': 'Compartments signals on Hi-C contact matrices'}
+            },
+        },
+        {
+            "app_name": "rna-strandedness",
+            "workflow_uuid": "af97597e-877a-40b7-b211-98ec0cfb17b4",
+            'config': {'mem': 2, 'cpu': 2, "instance_type": "t3.small", 'ebs_size': '1.1x', 'EBS_optimized': 'false'}
+        },
+        # RNA SEQ
+        {
+            "app_name": "encode-rnaseq-stranded",
+            "workflow_uuid": "4dn-dcic-lab:wf-encode-rnaseq-stranded",
+            "parameters": {
+                'rna.strandedness': 'stranded',
+                'rna.strandedness_direction': '',
+                'rna.endedness': ''
+            },
+            'custom_pf_fields': {
+                'rna.outbam': {
+                    'genome_assembly': genome,
+                    'file_type': 'read positions',
+                    'description': 'Output file from RNA seq pipeline'
+                },
+                'rna.plusbw': {
+                    'genome_assembly': genome,
+                    'file_type': 'read counts (plus)',
+                    'description': 'Output file from RNA seq pipeline'
+                },
+                'rna.minusbw': {
+                    'genome_assembly': genome,
+                    'file_type': 'read counts (minus)',
+                    'description': 'Output file from RNA seq pipeline'
+                },
+                'rna.gene_expression': {
+                    'genome_assembly': genome,
+                    'file_type': 'gene expression',
+                    'description': 'Output file from RNA seq pipeline'
+                },
+                'rna.isoform_expression': {
+                    'genome_assembly': genome,
+                    'file_type': 'isoform expression',
+                    'description': 'Output file from RNA seq pipeline'
+                }
+            }
+        },
+        {
+            "app_name": "encode-rnaseq-unstranded",
+            "workflow_uuid": "4dn-dcic-lab:wf-encode-rnaseq-unstranded",
+            "parameters": {
+                'rna.strandedness': 'unstranded',
+                'rna.strandedness_direction': 'unstranded',
+                'rna.endedness': 'paired'
+            },
+            'custom_pf_fields': {
+                'rna.outbam': {
+                    'genome_assembly': genome,
+                    'file_type': 'read positions',
+                    'description': 'Output file from RNA seq pipeline'
+                },
+                'rna.outbw': {
+                    'genome_assembly': genome,
+                    'file_type': 'read counts',
+                    'description': 'Output file from RNA seq pipeline'
+                },
+                'rna.gene_expression': {
+                    'genome_assembly': genome,
+                    'file_type': 'gene expression',
+                    'description': 'Output file from RNA seq pipeline'
+                },
+                'rna.isoform_expression': {
+                    'genome_assembly': genome,
+                    'file_type': 'isoform expression',
+                    'description': 'Output file from RNA seq pipeline'
+                }
+            }
+        },
+        {
+            "app_name": "bamqc",
+            "workflow_uuid": "42683ab1-59bf-4ec5-a973-030053a134f1",
+            "overwrite_input_extra": False,
+            "config": {"ebs_size": 10}
+        },
+        {
+            "app_name": "fastq-first-line",
+            "workflow_uuid": "93a1a931-d55d-4623-adfb-0fa735daf6ae",
+            "overwrite_input_extra": False,
+            'config': {'mem': 2, 'cpu': 2, "instance_type": "t3.small"}
+        },
+        {
+            "app_name": "re_checker_workflow",
+            "workflow_uuid": "8479d16e-667a-41e9-8ace-391128f50dc5",
+            "parameters": {},
+            "config": {
+                "mem": 4,
+                "ebs_size": 10,
+                "instance_type": "t3.medium"
+            }
+        },
+        {
+            "app_name": "mad_qc_workflow",
+            "workflow_uuid": "4dba38f0-af7a-4432-88e4-ca804dea64f8",
+            "parameters": {},
+            "config": {"ebs_size": 10, "instance_type": "t3.medium"}
+        },
+        {
+            "app_name": "mcoolQC",
+            "workflow_uuid": "0bf9f47a-dec1-4324-9b41-fa183880a7db",
+            "overwrite_input_extra": False,
+            "config": {"ebs_size": 10, "instance_type": "c5ad.2xlarge"}
+        },
+        # temp
+        {
+            "app_name": "",
+            "workflow_uuid": "",
+            "parameters": {},
+            'custom_pf_fields': {
+                '': {
+                    'genome_assembly': genome,
+                    'file_type': '',
+                    'description': ''}
+            }
         }
     ]
     # if params, overwrite parameters

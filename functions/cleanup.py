@@ -37,6 +37,9 @@ workflow_details = [
     ['fastq-first-line', ['v2'], 200],
     ['re_checker_workflow', ['v1.1', 'v1.2'], 200],
     ['mad_qc_workflow', ['1.1_dcic_2'], 200],
+    ['insulation-scores-and-boundaries-caller', ['v1'], 200],
+    ['compartments-caller', ['v1.2'], 200],
+    ['mcoolQC', ['v1'], 200],
     # cgap ones
     ['workflow_bwa-mem_no_unzip-check', ['v9', 'v10', 'v11', 'v12', 'v13'], 48],
     ['workflow_add-readgroups-check', ['v9', 'v10', 'v11', 'v12', 'v13'], 12],
