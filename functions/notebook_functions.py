@@ -138,13 +138,12 @@ def append_items_to_xlsx(input_xlsx, add_items, schema_names, comment=True):
                 new_sheet.cell(row=row_index, column=col_index, value=cell_value)
 
         # get items to add
-        # exception for microscopy paths
-        if sheet == 'ExperimentMic_Path':
-            items_to_add = add_items.get(schema_names['ExperimentMic'])
-        else:
-            items_to_add = add_items.get(schema_names[sheet])
-        # append rows at the bottom
+        items_to_add = add_items.get(schema_names[sheet])
         if items_to_add:
+            # exception for imaging paths
+            if sheet == 'ExperimentMic':
+                new_sheet, first_row_values = add_extra_path_columns(new_sheet, first_row_values, items_to_add)
+            # append rows at the bottom
             formatted_items = format_items(items_to_add, first_row_values, comment)
             for row_index_append, row_item in enumerate(formatted_items, start=row_index + 1):
                 for col_index, cell_value in enumerate(row_item, start=1):
@@ -153,6 +152,50 @@ def append_items_to_xlsx(input_xlsx, add_items, schema_names, comment=True):
     book_w.save(output_file_name)
     print('new excel is stored as', output_file_name)
     return
+
+
+def add_extra_path_columns(new_sheet, first_row_values, items_to_add):
+    '''
+        Duplicates the imaging_paths.channel and imaging_paths.path columns
+        in new_sheet if there is more than one path in items_to_add
+    '''
+    # find the longest number of imaging_paths in items_to_add
+    img_path_keys = []
+    for item in items_to_add:
+        if item.get('imaging_paths'):
+            current_img_path_keys = list(items_to_add[0]['imaging_paths'][0].keys())
+            if len(current_img_path_keys) > len(img_path_keys):
+                img_path_keys = current_img_path_keys
+
+    # check if imaging_paths is in first_row_values
+    try:
+        imgpth_channel_index = first_row_values.index('imaging_paths.channel')
+        # assume imaging_paths.path is at index imgpth_channel_index + 1
+    except ValueError:
+        return new_sheet, first_row_values
+
+    # insert missing columns
+    insert_index = imgpth_channel_index + 2
+    for img_path in img_path_keys:
+        full_img_path = 'imaging_paths.' + img_path
+        if full_img_path in first_row_values:
+            insert_index = first_row_values.index(full_img_path) + 1
+        else:
+            first_row_values.insert(insert_index, full_img_path)
+            new_sheet.insert_cols(insert_index + 1)  # workbooks count from 1, not 0
+            if img_path.startswith('channel'):
+                index_column_to_duplicate = imgpth_channel_index + 1
+            else:
+                index_column_to_duplicate = imgpth_channel_index + 2
+            column_to_duplicate = [v for (v,) in new_sheet.iter_rows(min_col=index_column_to_duplicate,
+                                                                     max_col=index_column_to_duplicate,
+                                                                     values_only=True)]
+            column_to_duplicate[0] = full_img_path  # replace title
+            for row_index, cell_value in enumerate(column_to_duplicate, start=1):
+                new_sheet.cell(row=row_index, column=insert_index + 1, value=cell_value)
+            insert_index += 1
+
+    return new_sheet, first_row_values
 
 
 def format_items(items_list, field_list, comment):
