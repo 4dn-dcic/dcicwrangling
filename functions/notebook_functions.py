@@ -2,51 +2,92 @@ from dcicutils import ff_utils
 from uuid import UUID
 import os
 import json
-import xlrd
-import xlwt
+import openpyxl
+import warnings  # to suppress openpxl warning about headers
+from openpyxl.utils.exceptions import InvalidFileException
 import datetime
 
 
-def reader(filename, sheetname=None):
+def digest_xlsx(filename):
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            book = openpyxl.load_workbook(filename)
+    except InvalidFileException as e:
+        if filename.endswith('.xls'):
+            print("WARNING - Old xls format not supported - please save your workbook as xlsx")
+        else:
+            print("ERROR - ", e)
+        sys.exit(1)
+    sheets = book.sheetnames
+    return book, sheets
+
+
+def reader(workbook, sheetname=None):
     """Read named sheet or first and only sheet from xlsx file."""
-    book = xlrd.open_workbook(filename)
     if sheetname is None:
-        sheet, = book.sheets()
+        sheet = workbook.worksheets[0]
     else:
         try:
-            sheet = book.sheet_by_name(sheetname)
-        except xlrd.XLRDError:
+            sheet = workbook[sheetname]
+        except Exception as e:
+            print(e)
             print(sheetname)
-            print("ERROR: Can not find the collection sheet in excel file (xlrd error)")
+            print("ERROR: Can not find the collection sheet in excel file (openpyxl error)")
             return
-    datemode = sheet.book.datemode
-    for index in range(sheet.nrows):
-        yield [cell_value(cell, datemode) for cell in sheet.row(index)]
+    # Generator that gets rows from excel sheet
+    # NB we have a lot of empty no formatting rows added (can we get rid of that)
+    # or do we need to be careful to check for the first totally emptyvalue row?
+    return row_generator(sheet)
 
 
-def cell_value(cell, datemode):
-    """Get cell value from excel."""
-    # This should be always returning text format if the excel is generated
-    # by the get_field_info command
-    ctype = cell.ctype
+def row_generator(sheet):
+    """Generator that gets rows from excel sheet
+    Note that this currently checks to see if a row is empty and if so stops
+    This is needed as plain text formatting of cells is recognized as data
+    """
+    for row in sheet.rows:
+        vals = [cell_value(cell) for cell in row]
+        if not any([v for v in vals]):
+            return
+        else:
+            yield vals
+
+
+def cell_value(cell):
+    """Get cell value from excel. [From Submit4DN]"""
+    ctype = cell.data_type
     value = cell.value
-    if ctype == xlrd.XL_CELL_ERROR:  # pragma: no cover
-        raise ValueError(repr(cell), 'cell error')
-    elif ctype == xlrd.XL_CELL_BOOLEAN:
-        return str(value).upper().strip()
-    elif ctype == xlrd.XL_CELL_NUMBER:
-        if value.is_integer():
-            value = int(value)
-        return str(value).strip()
-    elif ctype == xlrd.XL_CELL_DATE:
-        value = xlrd.xldate_as_tuple(value, datemode)
-        if value[3:] == (0, 0, 0):
-            return datetime.date(*value[:3]).isoformat()
-        else:  # pragma: no cover
-            return datetime.datetime(*value).isoformat()
-    elif ctype in (xlrd.XL_CELL_TEXT, xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK):
+    if ctype == openpyxl.cell.cell.TYPE_ERROR:  # pragma: no cover
+        raise ValueError('Cell %s contains a cell error' % str(cell.coordinate))
+    elif ctype == openpyxl.cell.cell.TYPE_BOOL:
+        boolstr = str(value).strip()
+        if boolstr == 'TRUE':
+            return True
+        elif boolstr == 'FALSE':
+            return False
+        else:
+            return value
+    elif ctype in (openpyxl.cell.cell.TYPE_NUMERIC, openpyxl.cell.cell.TYPE_NULL):
+        if isinstance(value, float):
+            if value.is_integer():
+                value = int(value)
+        if not value:
+            return ''
+        return value
+    elif isinstance(value, openpyxl.cell.cell.TIME_TYPES):
+        if isinstance(value, datetime.datetime):
+            if value.time() == datetime.time(0, 0, 0):
+                return value.date().isoformat()
+            else:  # pragma: no cover
+                return value.isoformat()
+        else:
+            return value.isoformat()
+    elif ctype in (openpyxl.cell.cell.TYPE_STRING, openpyxl.cell.cell.TYPE_INLINE):
         return value.strip()
-    raise ValueError(repr(cell), 'unknown cell type')  # pragma: no cover
+    raise ValueError(
+        'Cell %s is not an acceptable cell type' % str(cell.coordinate)
+    )  # pragma: no cover
 
 
 def get_key(keyname=None, keyfile='keypairs.json'):
@@ -80,50 +121,35 @@ def get_key(keyname=None, keyfile='keypairs.json'):
     return my_key
 
 
-def append_items_to_xls(input_xls, add_items, schema_name, comment=True):
-    output_file_name = "_with_items.".join(input_xls.split('.'))
-    # if xlsx, change to xls, can not store xlsx properly
-    output_file_name = output_file_name.replace(".xlsx", ".xls")
-    bookread = xlrd.open_workbook(input_xls)
-    book_w = xlwt.Workbook()
-    Sheets_read = bookread.sheet_names()
+def append_items_to_xlsx(input_xlsx, add_items, schema_names, comment=True):
+    output_file_name = "_with_items.".join(input_xlsx.split('.'))
+    bookread = openpyxl.load_workbook(input_xlsx)
+    book_w = openpyxl.Workbook()
+    book_w.remove(book_w.active)  # removes the empty sheet created by default named Sheet
 
-    # text styling for all columns
-    style = xlwt.XFStyle()
-    style.num_format_str = "@"
-
-    for sheet in Sheets_read:
-        active_sheet = bookread.sheet_by_name(sheet)
-        first_row_values = active_sheet.row_values(rowx=0)
+    for sheet in bookread.sheetnames:
+        active_sheet = bookread[sheet]
+        first_row_values = [cell for (cell,) in active_sheet.iter_cols(min_row=1, max_row=1, values_only=True)]
 
         # create a new sheet and write the data
-        new_sheet = book_w.add_sheet(sheet)
-        for write_row_index, write_item in enumerate(first_row_values):
-            read_col_ind = first_row_values.index(write_item)
-            column_val = active_sheet.col_values(read_col_ind)
-            for write_column_index, cell_value in enumerate(column_val):
-                new_sheet.write(write_column_index, write_row_index, cell_value, style)
+        new_sheet = book_w.create_sheet(title=sheet)
+        for row_index, row in enumerate(active_sheet.values, start=1):
+            for col_index, cell_value in enumerate(row, start=1):
+                new_sheet.cell(row=row_index, column=col_index, value=cell_value)
 
         # get items to add
         # exception for microscopy paths
         if sheet == 'ExperimentMic_Path':
-            items_to_add = add_items.get(schema_name['ExperimentMic'])
+            items_to_add = add_items.get(schema_names['ExperimentMic'])
         else:
-            items_to_add = add_items.get(schema_name[sheet])
+            items_to_add = add_items.get(schema_names[sheet])
+        # append rows at the bottom
         if items_to_add:
             formatted_items = format_items(items_to_add, first_row_values, comment)
-            for i, item in enumerate(formatted_items):
-                for ix in range(len(first_row_values)):
-                    write_column_index_II = write_column_index + 1 + i
-                    new_sheet.write(write_column_index_II, ix, str(item[ix]), style)
-        else:
-            write_column_index_II = write_column_index
+            for row_index_append, row_item in enumerate(formatted_items, start=row_index + 1):
+                for col_index, cell_value in enumerate(row_item, start=1):
+                    new_sheet.cell(row=row_index_append, column=col_index, value=cell_value)
 
-        # write 100 empty lines with text formatting
-        for i in range(100):
-            for ix in range(len(first_row_values)):
-                write_column_index_III = write_column_index_II + 1 + i
-                new_sheet.write(write_column_index_III, ix, '', style)
     book_w.save(output_file_name)
     print('new excel is stored as', output_file_name)
     return
