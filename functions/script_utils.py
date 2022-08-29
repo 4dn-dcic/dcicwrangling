@@ -5,19 +5,22 @@ import sys
 import ast
 import json
 from pathlib import Path
-from dcicutils.ff_utils import search_metadata, get_metadata
+from dcicutils.ff_utils import search_metadata, get_metadata, get_authentication_with_server
+from .notebook_functions import get_key
 
 
 def create_ff_arg_parser():
     ff_arg_parser = argparse.ArgumentParser(add_help=False)
     ff_arg_parser.add_argument('--env',
-                               default='fourfront-mastertest',
-                               help="The environment to use i.e. data, webdev, mastertest.\
+                               default=None,
+                               help="The environment to use i.e. fourfront-mastertest, fourfront-production-blue.\
                                Default is 'mastertest')")
     ff_arg_parser.add_argument('--key',
                                default=None,
-                               help="An access key dictionary including key, secret and server.\
-                               {'key': 'ABCDEF', 'secret': 'supersecret', 'server': 'https://data.4dnucleome.org'}")
+                               help="A name for your fourfront access key info in keypairs.json (or whatever you've named you keypairs file)")
+    ff_arg_parser.add_argument('--keyfile',
+                               default='keypairs.json',
+                               help="The name (and path if not stored in your home directory) of your keypairs file")
     ff_arg_parser.add_argument('--dbupdate',
                                default=False,
                                action='store_true',
@@ -37,6 +40,21 @@ def create_input_arg_parser():
                                   help='Include if you are passing in a search string \
                                   eg. type=Biosource&biosource_type=primary cell')
     return input_arg_parser
+
+
+def authenticate(key=None, keyfile=None, env=None):
+    if (not key) == (not env):
+        raise Exception("You must provide a single valid keyname or env value and not both for authentication")
+    auth = None
+    try:
+        auth = get_key(keyname=key, keyfile=keyfile)
+    except Exception:
+        try:
+            auth = get_authentication_with_server(auth, ff_env=env)
+        except Exception:
+            print("Authentication failed")
+            sys.exit(1)
+    return auth
 
 
 def find_keyname_in_keyfile(keyname, keyfile):

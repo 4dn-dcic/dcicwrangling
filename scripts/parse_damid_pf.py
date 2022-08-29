@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import sys
 import argparse
-import xlrd
 import datetime
 import re
 from dcicutils.ff_utils import (
@@ -9,6 +8,7 @@ from dcicutils.ff_utils import (
     patch_metadata, search_metadata,
     get_metadata)
 from dcicwrangling.functions import script_utils as scu
+from dcicwrangling.functions.notebook_functions import digest_xlsx, reader
 '''
 Parsing damid processed file worksheet to generate the various bins
 of other processed files using information from the linked_dataset column
@@ -27,27 +27,11 @@ to match up replicates - see Andy if needed
 PF_BIN = '5kb bin'  # the bin for which a subset of files should be considered processed_files rather than opfs
 
 
-def reader(filename, sheetname=None):
-    """Read named sheet or first and only sheet from xlsx file.
-        from submit4dn import_data"""
-    book = xlrd.open_workbook(filename)
-    if sheetname is None:
-        sheet, = book.sheets()
-    else:
-        try:
-            sheet = book.sheet_by_name(sheetname)
-        except xlrd.XLRDError:
-            print(sheetname)
-            print("ERROR: Can not find the collection sheet in excel file (xlrd error)")
-            return
-    datemode = sheet.book.datemode
-    for index in range(sheet.nrows):
-        yield [cell_value(cell, datemode) for cell in sheet.row(index)]
-
-
 def extract_rows(infile):
+    book, sheets = digest_xlsx(infile)
     data = []
     row = reader(infile, sheetname='FileProcessed')
+    import pdb; pdb.set_trace()
     fields = next(row)
     fields = [f.replace('*', '') for f in fields]
     types = next(row)
@@ -60,32 +44,6 @@ def extract_rows(infile):
         meta = dict(zip(fields, values))
         data.append(meta)
     return data
-
-
-def cell_value(cell, datemode):
-    """Get cell value from excel.
-        from submit4dn import_data"""
-    # This should be always returning text format if the excel is generated
-    # by the get_field_info command
-    ctype = cell.ctype
-    value = cell.value
-    if ctype == xlrd.XL_CELL_ERROR:  # pragma: no cover
-        raise ValueError(repr(cell), 'cell error')
-    elif ctype == xlrd.XL_CELL_BOOLEAN:
-        return str(value).upper().strip()
-    elif ctype == xlrd.XL_CELL_NUMBER:
-        if value.is_integer():
-            value = int(value)
-        return str(value).strip()
-    elif ctype == xlrd.XL_CELL_DATE:
-        value = xlrd.xldate_as_tuple(value, datemode)
-        if value[3:] == (0, 0, 0):
-            return datetime.date(*value[:3]).isoformat()
-        else:  # pragma: no cover
-            return datetime.datetime(*value).isoformat()
-    elif ctype in (xlrd.XL_CELL_TEXT, xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK):
-        return value.strip()
-    raise ValueError(repr(cell), 'unknown cell type')  # pragma: no cover
 
 
 def is_processed_bin(desc, meta):
@@ -134,19 +92,13 @@ def get_args(args):
         parents=[scu.create_ff_arg_parser(), scu.create_input_arg_parser()],
     )
     args = parser.parse_args()
-    if args.key:
-        args.key = scu.convert_key_arg_to_dict(args.key)
     return args
 
 
 def main():  # pragma: no cover
     # initial set up
     args = get_args(sys.argv[1:])
-    try:
-        auth = get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
 
     repre = re.compile(r'_r\d+_')
     binre = re.compile(r'^\S+ bin')
@@ -158,6 +110,7 @@ def main():  # pragma: no cover
     if len(args.input) > 1:
         query = args.input[1]
 
+    import pdb; pdb.set_trace()
     metadata = extract_rows(infile)
     patch_items = {}
     seen_esets = {}  # if you are dealing with an experiment want to use the dataset_label and condition
@@ -184,7 +137,7 @@ def main():  # pragma: no cover
             else:  # we've got an experiment
                 esets = item.get('experiment_sets')
                 if len(esets) != 1:  # some sort of unusual situation
-                    raise(Exception, 'experiment linked to multiple experiment sets -- abort!')
+                    raise (Exception, 'experiment linked to multiple experiment sets -- abort!')
                 esetid = esets[0].get('uuid')
                 if esetid not in seen_esets:
                     eset = get_metadata(esetid, auth)

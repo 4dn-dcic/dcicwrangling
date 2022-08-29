@@ -22,18 +22,14 @@ def get_args(args):
     parser.add_argument('--numtype',
                         help="options: 'i' or 'f' If the field value is integer or number deal accordingly")
     args = parser.parse_args(args)
-    if args.key:
-        args.key = scu.convert_key_arg_to_dict(args.key)
+    # if args.key:
+    #    args.key = scu.convert_key_arg_to_dict(args.key)
     return args
 
 
 def main():
     args = get_args(sys.argv[1:])
-    try:
-        auth = get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
     print("Working on {}".format(auth.get('server')))
     itemids = scu.get_item_ids_from_args(args.input, auth, args.search)
     field = args.field
