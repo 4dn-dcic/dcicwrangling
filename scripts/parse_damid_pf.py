@@ -4,7 +4,6 @@ import argparse
 import datetime
 import re
 from dcicutils.ff_utils import (
-    get_authentication_with_server,
     patch_metadata, search_metadata,
     get_metadata)
 from dcicwrangling.functions import script_utils as scu
@@ -28,10 +27,10 @@ PF_BIN = '5kb bin'  # the bin for which a subset of files should be considered p
 
 
 def extract_rows(infile):
+    # import pdb; pdb.set_trace()
     book, sheets = digest_xlsx(infile)
     data = []
-    row = reader(infile, sheetname='FileProcessed')
-    import pdb; pdb.set_trace()
+    row = reader(book, sheetname='FileProcessed')
     fields = next(row)
     fields = [f.replace('*', '') for f in fields]
     types = next(row)
@@ -110,7 +109,7 @@ def main():  # pragma: no cover
     if len(args.input) > 1:
         query = args.input[1]
 
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     metadata = extract_rows(infile)
     patch_items = {}
     seen_esets = {}  # if you are dealing with an experiment want to use the dataset_label and condition
