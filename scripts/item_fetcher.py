@@ -3,9 +3,8 @@
 Given a list of item IDs will fetch the items or the fields of those items
 specified in the --fields parameter)
 '''
-import sys
 import argparse
-from dcicutils.ff_utils import get_authentication_with_server, get_metadata
+from dcicutils.ff_utils import get_metadata
 from functions import script_utils as scu
 
 
@@ -22,19 +21,12 @@ def get_args():
                         default='False',
                         help="By default the id provided is the first column of output - this flag removes that column")
 
-    args = parser.parse_args()
-    if args.key:
-        args.key = scu.convert_key_arg_to_dict(args.key)
-    return args
+    return parser.parse_args()
 
 
 def main():  # pragma: no cover
     args = get_args()
-    try:
-        auth = get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
 
     print('#', auth.get('server'))
     id_list = scu.get_item_ids_from_args(args.input, auth, args.search)

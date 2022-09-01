@@ -21,11 +21,7 @@ def get_args():  # pragma: no cover
 
 def main():
     args = get_args()
-    try:
-        auth = ff.get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
     itemids = scu.get_item_ids_from_args([args.query], auth, True)
     for itemid in itemids:
         print(itemid)
