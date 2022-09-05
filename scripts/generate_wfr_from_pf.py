@@ -19,6 +19,11 @@ def get_args(args):
                         help="The uuid of the workflow to use to generate the run \
                               default is File Provenance Workflow"
                         )
+    parser.add_argument('--omit_note',
+                        default=False,
+                        action='store_true',
+                        help="Boolean to skip adding a note to tsv about non-DCIC processing \
+                              default is False")
 
     args = parser.parse_args(args)
     if args.key:
@@ -159,10 +164,11 @@ def main():
                 print(wfr_json)
             else:
                 res = post_metadata(wfr_json, 'workflow_run_awsem', auth)
-                # and add a notes_to_tsv to the file
-                patchstatus = add_notes_to_tsv(file_info, auth)
                 print(res)
-                print(patchstatus)
+                if not args.omit_note:
+                    # and add a notes_to_tsv to the file
+                    patchstatus = add_notes_to_tsv(file_info, auth)
+                    print(patchstatus)
 
 
 if __name__ == '__main__':  # pragma: no cover
