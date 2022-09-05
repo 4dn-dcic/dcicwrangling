@@ -69,7 +69,7 @@ def create_wfr_meta_only_json(auth, workflow, inputs, outputs, alias=None, descr
         alias = '4dn-dcic-lab:' + workflow.get('name') + '_run_' + now.replace(':', '-').replace(' ', '-')
     wfr_title = workflow.get('title') + ' run on ' + now
 
-    award, lab = get_attribution(infiles + outfiles + [workflow])
+    award, lab = get_attribution(outfiles + infiles + [workflow])
 
     wfr_json = {
         'workflow': workflow.get('uuid'),
