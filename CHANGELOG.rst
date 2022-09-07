@@ -6,6 +6,13 @@ dcicwrangling
 Change Log
 ----------
 
+0.5.5
+=====
+
+`PR 85: Update scripts <https://github.com/4dn-dcic/dcicwrangling/pull/85>`_
+
+* Add an optional arg to `omit_note` in generate_wfr_from_pf.
+* Change attribution of File Provenance Tracking WorkFlowRun to match the one of the output file.
 
 0.5.4
 =====
