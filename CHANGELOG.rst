@@ -9,6 +9,8 @@ Change Log
 0.5.6
 =====
 
+`PR 88: remove deleted items from store <https://github.com/4dn-dcic/dcicwrangling/pull/88>`_
+
 * Bug fix: items patched by delete_wfrs() are now removed from store, to prevent un-deleting.
 
 0.5.5
