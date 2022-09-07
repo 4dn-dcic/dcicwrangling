@@ -6,6 +6,11 @@ dcicwrangling
 Change Log
 ----------
 
+0.5.6
+=====
+
+* Bug fix: items patched by delete_wfrs() are now removed from store, to prevent un-deleting.
+
 0.5.5
 =====
 
