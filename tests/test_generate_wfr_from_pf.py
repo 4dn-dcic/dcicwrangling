@@ -311,6 +311,7 @@ def mocked_args_dbupd_is_false():
             'key': None,
             'env': 'prod',
             'dbupdate': False,
+            'omit_note': False,
             'search': False,
             'input': 'i',
             'workflow': 'w'
@@ -325,6 +326,7 @@ def mocked_args_dbupd():
             'key': None,
             'env': 'prod',
             'dbupdate': True,
+            'omit_note': False,
             'search': False,
             'input': 'i',
             'workflow': 'w'

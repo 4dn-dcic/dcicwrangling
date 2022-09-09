@@ -161,7 +161,9 @@ def get_wfr_report(wfrs):
 def delete_wfrs(file_resp, my_key, delete=False, stash=None):
     # file_resp in embedded frame
     # stash: all related wfrs for file_resp
-    deleted_wfrs = []
+    deleted_wfrs = []  # reports WorkflowRun items deleted by this function
+    deleted_files = []  # reports File items deleted by this function because outputs of wfr deleted by this function
+    deleted_qc = []  # reports QualityMetric items deleted by this function because linked to wfr deleted by this function
     wfr_report = []
     file_type = file_resp['@id'].split('/')[1]
     # special clause until we sort input_wfr_switch issue
@@ -200,6 +202,24 @@ def delete_wfrs(file_resp, my_key, delete=False, stash=None):
     # Skip sbg and file provenance
     wfrs = [i for i in wfrs if not i['@id'].startswith('/workflow-runs-sbg/')]
     wfrs = [i for i in wfrs if not i['display_title'].startswith('File Provenance Tracking')]
+
+    def _delete_action(wfr_to_del):
+        # delete the Workflow Run
+        patch_data = {'description': "This workflow run is deleted", 'status': "deleted"}
+        deleted_wfrs.append(wfr_to_del['wfr_uuid'])
+        ff_utils.patch_metadata(patch_data, obj_id=wfr_to_del['wfr_uuid'], key=my_key)
+        # delete output files of the deleted workflow run
+        if wfr_to_del['outputs']:
+            for out_file_uuid in wfr_to_del['outputs']:
+                deleted_files.append(out_file_uuid)
+                ff_utils.patch_metadata({'status': "deleted"}, obj_id=out_file_uuid, key=my_key)
+        # delete QualityMetric of the deleted workflow run or of the deleted output files
+        if wfr_to_del.get('qcs'):
+            for out_qc_uuid in wfr_to_del['qcs']:
+                deleted_qc.append(out_qc_uuid)
+                ff_utils.patch_metadata({'status': "deleted"}, obj_id=out_qc_uuid, key=my_key)
+        return
+
     # CLEAN UP IF FILE IS DELETED
     if file_resp['status'] == 'deleted':
         if file_resp.get('quality_metric'):
@@ -232,16 +252,7 @@ def delete_wfrs(file_resp, my_key, delete=False, stash=None):
                     #####################################################
                     print(wfr_to_del['wfr_name'], 'deleted file workflow', wfr_to_del['wfr_uuid'], file_resp['accession'])
                     if delete:
-                        patch_data = {'description': "This workflow run is deleted", 'status': "deleted"}
-                        deleted_wfrs.append(wfr_to_del['wfr_uuid'])
-                        ff_utils.patch_metadata(patch_data, obj_id=wfr_to_del['wfr_uuid'], key=my_key)
-                        # delete output files of the deleted workflow run
-                        if wfr_to_del['outputs']:
-                            for out_file in wfr_to_del['outputs']:
-                                ff_utils.patch_metadata({'status': "deleted"}, obj_id=out_file, key=my_key)
-                        if wfr_to_del.get('qcs'):
-                            for out_qc in wfr_to_del['qcs']:
-                                ff_utils.patch_metadata({'status': "deleted"}, obj_id=out_qc, key=my_key)
+                        _delete_action(wfr_to_del)
 
     else:
         # get a report on all workflow_runs
@@ -292,14 +303,6 @@ def delete_wfrs(file_resp, my_key, delete=False, stash=None):
                                 print(wfr_to_del['wfr_name'], 'old style or dub',
                                       wfr_to_del['wfr_uuid'], file_resp['accession'])
                                 if delete:
-                                    patch_data = {'description': "This workflow run is deleted", 'status': "deleted"}
-                                    deleted_wfrs.append(wfr_to_del['wfr_uuid'])
-                                    ff_utils.patch_metadata(patch_data, obj_id=wfr_to_del['wfr_uuid'], key=my_key)
-                                    # delete output files of the deleted workflow run
-                                    if wfr_to_del['outputs']:
-                                        for out_file in wfr_to_del['outputs']:
-                                            ff_utils.patch_metadata({'status': "deleted"}, obj_id=out_file, key=my_key)
-                                    if wfr_to_del.get('qcs'):
-                                        for out_qc in wfr_to_del['qcs']:
-                                            ff_utils.patch_metadata({'status': "deleted"}, obj_id=out_qc, key=my_key)
-    return deleted_wfrs
+                                    _delete_action(wfr_to_del)
+    deleted_items = deleted_wfrs + deleted_files + deleted_qc
+    return deleted_items
