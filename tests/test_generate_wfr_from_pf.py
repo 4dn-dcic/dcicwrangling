@@ -1,4 +1,5 @@
 import pytest
+import sys
 from copy import deepcopy as cp
 from scripts import generate_wfr_from_pf as gw
 
@@ -282,10 +283,12 @@ def test_add_notes_to_tsv_res_error(mocker, auth, fp_data):
 def test_wfr_get_args_required_default():
     defaults = {
         'dbupdate': False,
-        'env': 'fourfront-mastertest',
+        'env': None,
         'key': None,
+        'keyfile': 'keypairs.json',
         'search': False,
-        'workflow': 'bef50397-4d72-4ed1-9c78-100e14e5c47f'
+        'workflow': 'bef50397-4d72-4ed1-9c78-100e14e5c47f',
+        'omit_note': False
     }
     args = gw.get_args('i')
     for k, v in defaults.items():
@@ -300,8 +303,14 @@ class MockedNamespace(object):
 
 
 @pytest.fixture
-def mocked_args_no_args():
-    return MockedNamespace({})
+def mocked_args_w_key():
+    return MockedNamespace(
+        {
+            'key': 'testkey',
+            'keyfile': 'testkeyfile',
+            'env': None
+        }
+    )
 
 
 @pytest.fixture
@@ -309,6 +318,7 @@ def mocked_args_dbupd_is_false():
     return MockedNamespace(
         {
             'key': None,
+            'keyfile': None,
             'env': 'prod',
             'dbupdate': False,
             'omit_note': False,
@@ -324,6 +334,7 @@ def mocked_args_dbupd():
     return MockedNamespace(
         {
             'key': None,
+            'keyfile': None,
             'env': 'prod',
             'dbupdate': True,
             'omit_note': False,
@@ -334,18 +345,10 @@ def mocked_args_dbupd():
     )
 
 
-def test_wfr_main_no_auth(mocker, capsys, mocked_args_no_args):
-    with pytest.raises(SystemExit):
-        mocker.patch('scripts.generate_wfr_from_pf.get_args', return_value=mocked_args_no_args)
-        gw.main()
-        out = capsys.readouterr()[0]
-        assert out == "Authentication failed"
-
-
 def test_wfr_main_no_parents(mocker, capsys, mocked_args_dbupd_is_false, auth, prov_workflow,
                              fp_data, infiles, wfr_out_json):
     mocker.patch('scripts.generate_wfr_from_pf.get_args', return_value=mocked_args_dbupd_is_false)
-    mocker.patch('scripts.generate_wfr_from_pf.get_authentication_with_server', return_value=auth)
+    mocker.patch('scripts.generate_wfr_from_pf.scu.authenticate', return_value=auth)
     mocker.patch('scripts.generate_wfr_from_pf.scu.get_item_ids_from_args', return_value=[fp_data['uuid']])
     mocker.patch('scripts.generate_wfr_from_pf.get_metadata', side_effect=[prov_workflow, fp_data])
     gw.main()
@@ -359,7 +362,7 @@ def test_wfr_main_dryrun(mocker, capsys, mocked_args_dbupd_is_false, auth, prov_
         "658ecf64-57a1-41aa-ac04-7224c7ed3208",
         "658ecf64-57a1-41aa-ac04-7224c7ed3209"]
     mocker.patch('scripts.generate_wfr_from_pf.get_args', return_value=mocked_args_dbupd_is_false)
-    mocker.patch('scripts.generate_wfr_from_pf.get_authentication_with_server', return_value=auth)
+    mocker.patch('scripts.generate_wfr_from_pf.scu.authenticate', return_value=auth)
     mocker.patch('scripts.generate_wfr_from_pf.scu.get_item_ids_from_args', return_value=[fp_data['uuid']])
     mocker.patch('scripts.generate_wfr_from_pf.get_metadata',
                  side_effect=[prov_workflow, fp_data, infiles[0], infiles[1]])
@@ -373,7 +376,7 @@ def test_wfr_main_dbupdate(mocker, capsys, mocked_args_dbupd, auth,
                            prov_workflow, fp_data, infiles, wfr_out_json):
     fp_data['produced_from'] = ["658ecf64-57a1-41aa-ac04-7224c7ed3208", "658ecf64-57a1-41aa-ac04-7224c7ed3209"]
     mocker.patch('scripts.generate_wfr_from_pf.get_args', return_value=mocked_args_dbupd)
-    mocker.patch('scripts.generate_wfr_from_pf.get_authentication_with_server', return_value=auth)
+    mocker.patch('scripts.generate_wfr_from_pf.scu.authenticate', return_value=auth)
     mocker.patch('scripts.generate_wfr_from_pf.scu.get_item_ids_from_args', return_value=[fp_data['uuid']])
     mocker.patch('scripts.generate_wfr_from_pf.get_metadata',
                  side_effect=[prov_workflow, fp_data, infiles[0], infiles[1]])

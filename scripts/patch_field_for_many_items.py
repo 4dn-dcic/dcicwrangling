@@ -22,8 +22,6 @@ def get_args(args):
     parser.add_argument('--numtype',
                         help="options: 'i' or 'f' If the field value is integer or number deal accordingly")
     args = parser.parse_args(args)
-    # if args.key:
-    #    args.key = scu.convert_key_arg_to_dict(args.key)
     return args
 
 

@@ -46,18 +46,12 @@ def get_args(args):
                         help='Normally released items are skipped \
                         - this flag includes them in the final list')
     args = parser.parse_args(args)
-    if args.key:
-        args.key = scu.convert_key_arg_to_dict(args.key)
     return args
 
 
 def main():
     args = get_args(sys.argv[1:])
-    try:
-        auth = get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
     itemids = scu.get_item_ids_from_args(args.input, auth, args.search)
     excluded_types = get_excluded(args.types2exclude, args.types2include)
     no_child = ['Publication', 'Lab', 'User', 'Award']  # default no_childs

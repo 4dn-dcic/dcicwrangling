@@ -37,26 +37,16 @@ def get_args():
         description=description,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument('--key',
-                        default='default',
-                        help="The keypair identifier from the keyfile.  \
-                        Default is --key=default")
-    parser.add_argument('--keyfile',
-                        default=Path("~/keypairs.json").expanduser(),
-                        help="The keypair file. Default is --keyfile={}".format(
-                            Path("~/keypairs.json").expanduser()))
+    parser = argparse.ArgumentParser(
+        description=description,
+        parents=[scu.create_ff_arg_parser()],
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument('--format',
                         default='html',
                         help="Generated output format: html|markdown. \
                         Default is html")
-    parser.add_argument('--dryrun',
-                        default=False,
-                        action='store_true',
-                        help="Run script without posting or patching. \
-                        Default is False")
     args = parser.parse_args()
-    if args.key and args.keyfile:
-        args.key = scu.find_keyname_in_keyfile(args.key, args.keyfile)
     return args
 
 
@@ -274,13 +264,9 @@ def main():
 
     # getting authentication keys
     args = get_args()
-    try:
-        auth = ff_utils.get_authentication_with_server(args.key)
-    except Exception as e:
-        print("Authentication failed", e)
-        sys.exit(1)
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
 
-    dryrun = args.dryrun
+    dryrun = not args.dbupdate
     if dryrun:
         print("\nThis is a dry run\n")
 

@@ -4,6 +4,11 @@ import sys
 import argparse
 from dcicutils.ff_utils import get_authentication_with_server, get_metadata, patch_metadata
 from functions import script_utils as scu
+""" DEPRECATED
+    this script will take info from a biorxiv item with linked data and transfer to a publication that is in the db
+    this has been incorporated into and been deprecated by the foursight check and action that does the same but better
+    although there may be a bit more flexibility in using this script
+"""
 
 
 def get_args():  # pragma: no cover
@@ -20,8 +25,6 @@ def get_args():  # pragma: no cover
                         help="A list of values or IDs (uuids, accessions ...) to not transfer")
 
     args = parser.parse_args()
-    if args.key:
-        args.key = scu.convert_key_arg_to_dict(args.key)
     return args
 
 
@@ -127,11 +130,7 @@ def find_and_patch_item_references(auth, olduuid, newuuid, dryrun):
 
 def main():  # pragma: no cover
     args = get_args()
-    try:
-        auth = get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
     dryrun = not args.dbupdate
 
     biorxiv = get_metadata(args.old, auth)

@@ -77,6 +77,31 @@ def profiles():
         }
     }
 
+@pytest.fixture
+def auth():
+    return {'key': 'portal_key', 'secret': 'super_secret_access', 'server': 'https://test_portal'}
+
+
+def test_authenticate_no_key_or_env():
+    with pytest.raises(Exception):
+        scu.authenticate()
+ 
+
+def test_authenicate_w_key_no_keyfile():
+    with pytest.raises(SystemExit):
+        scu.authenticate(key='testkey')
+
+
+def test_authenticate_w_key_and_keyfile(mocker, auth):
+    mocker.patch('functions.script_utils.get_key', return_value=auth)
+    test_auth = scu.authenticate(key='testkey', keyfile='test_keyfile')
+    assert test_auth == auth
+
+def test_authenticate_w_env(mocker, auth):
+    mocker.patch('functions.script_utils.get_authentication_with_server', return_value=auth)
+    test_auth = scu.authenticate(env='testenv')
+    assert test_auth == auth
+
 
 def test_is_uuid():
     uuids = [
@@ -301,8 +326,8 @@ def test_get_linked_items_w_error_status(auth, mocker):
 def test_get_linked_items_w_no_type(auth, mocker):
     mocker.patch('functions.script_utils.get_metadata',
                  side_effect=[{'status': 'released'}, {'field': 'value'}])
-    iids = scu.get_linked_items(auth, 'test_id')
-    assert not iids
+    iids_emp = scu.get_linked_items(auth, 'test_id')
+    assert not iids_emp
 
 
 def test_get_linked_items_w_type_in_no_children(auth, mocker):
