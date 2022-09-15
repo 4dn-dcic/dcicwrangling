@@ -27,7 +27,6 @@ PF_BIN = '5kb bin'  # the bin for which a subset of files should be considered p
 
 
 def extract_rows(infile):
-    # import pdb; pdb.set_trace()
     book, sheets = digest_xlsx(infile)
     data = []
     row = reader(book, sheetname='FileProcessed')
@@ -109,7 +108,6 @@ def main():  # pragma: no cover
     if len(args.input) > 1:
         query = args.input[1]
 
-    # import pdb; pdb.set_trace()
     metadata = extract_rows(infile)
     patch_items = {}
     seen_esets = {}  # if you are dealing with an experiment want to use the dataset_label and condition

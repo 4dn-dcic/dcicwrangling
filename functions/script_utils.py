@@ -13,8 +13,7 @@ def create_ff_arg_parser():
     ff_arg_parser = argparse.ArgumentParser(add_help=False)
     ff_arg_parser.add_argument('--env',
                                default=None,
-                               help="The environment to use i.e. fourfront-mastertest, fourfront-production-blue.\
-                               Default is 'mastertest')")
+                               help="The environment to use i.e. fourfront-mastertest, fourfront-production-blue.")
     ff_arg_parser.add_argument('--key',
                                default=None,
                                help="A name for your fourfront access key info in keypairs.json (or whatever you've named you keypairs file)")
@@ -55,25 +54,6 @@ def authenticate(key=None, keyfile=None, env=None):
             print("Authentication failed")
             sys.exit(1)
     return auth
-
-
-def find_keyname_in_keyfile(keyname, keyfile):
-    if isinstance(keyfile, dict):
-        keys = keyfile
-    # is the keyfile a file (the expected case)
-    elif Path(str(keyfile)).is_file():
-        with open(keyfile, 'r') as kf:
-            keys_json_string = kf.read()
-            keys = json.loads(keys_json_string)
-    # if both fail, the file does not exist
-    else:
-        print("\nThe keyfile does not exist, check the --keyfile path or add 'keypairs.json' to your home folder\n")
-        sys.exit(1)
-    if keys:
-        key = keys.get(keyname)
-    if not key:
-        sys.exit("Key not found in the keyfile")
-    return key
 
 
 def convert_key_arg_to_dict(key):

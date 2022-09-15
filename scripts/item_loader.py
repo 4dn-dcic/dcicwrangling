@@ -6,12 +6,11 @@ import json
 from datetime import datetime
 from uuid import uuid4
 from dcicutils.ff_utils import (
-    get_authentication_with_server,
     post_metadata,
     get_metadata,
     patch_metadata,
 )
-from functions.script_utils import create_ff_arg_parser, convert_key_arg_to_dict
+from functions.script_utils import create_ff_arg_parser
 ''' Will attempt to load data from a file into the database using the load_data endpoint if it can
     or post/patch_metadata if not
     The file can be a simple list of json items in which case you need to specify an item type
@@ -121,8 +120,6 @@ def get_args():  # pragma: no cover
                              "This currently only works locally or if the file has been uploaded to "
                              "the apps file system")
     args = parser.parse_args()
-    if args.key:
-        args.key = convert_key_arg_to_dict(args.key)
     return args
 
 
@@ -193,11 +190,7 @@ def main():  # pragma: no cover
     start = datetime.now()
     print(str(start))
     args = get_args()
-    try:
-        auth = get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
     print('working on ', auth.get('server'))
     if args.as_file:
         if not args.dbupdate:

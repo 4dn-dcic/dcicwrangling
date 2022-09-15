@@ -77,6 +77,7 @@ def profiles():
         }
     }
 
+
 @pytest.fixture
 def auth():
     return {'key': 'portal_key', 'secret': 'super_secret_access', 'server': 'https://test_portal'}
@@ -96,6 +97,7 @@ def test_authenticate_w_key_and_keyfile(mocker, auth):
     mocker.patch('functions.script_utils.get_key', return_value=auth)
     test_auth = scu.authenticate(key='testkey', keyfile='test_keyfile')
     assert test_auth == auth
+
 
 def test_authenticate_w_env(mocker, auth):
     mocker.patch('functions.script_utils.get_authentication_with_server', return_value=auth)
