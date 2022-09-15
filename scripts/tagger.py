@@ -1,8 +1,9 @@
 import sys
 import argparse
-from dcicutils.ff_utils import get_authentication_with_server, get_metadata, patch_metadata
+from dcicutils.ff_utils import get_metadata, patch_metadata
 from functions import script_utils as scu
-
+""" Script to add arbitrary tags to items that can be tagged
+"""
 
 def make_tag_patch(item, tag):
     if item.get('tags'):
@@ -31,18 +32,12 @@ def get_args():  # pragma: no cover
                         you may have some linked items that can get tags but may \
                         not want to tag them with this tag")
     args = parser.parse_args()
-    if args.key:
-        args.key = scu.convert_key_arg_to_dict(args.key)
     return args
 
 
 def main():  # pragma: no cover
     args = get_args()
-    try:
-        auth = get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
     itemids = scu.get_item_ids_from_args(args.input, auth, args.search)
     taggable = scu.get_types_that_can_have_field(auth, 'tags')
     if args.types2exclude is not None:

@@ -1,5 +1,5 @@
 from dcicutils import ff_utils
-from dcicutils import s3Utils
+from dcicutils import s3_utils
 from datetime import datetime
 import json
 from IPython.core.display import display, HTML
@@ -65,7 +65,7 @@ def get_attribution(file_json):
 
 def extract_file_info(obj_id, arg_name, env, rename=[]):
     auth = ff_utils.get_authentication_with_server({}, ff_env=env)
-    my_s3_util = s3Utils(env=env)
+    my_s3_util = s3_utils(env=env)
 
     raw_bucket = my_s3_util.raw_file_bucket
     out_bucket = my_s3_util.outfile_bucket
@@ -120,7 +120,7 @@ def extract_file_info(obj_id, arg_name, env, rename=[]):
 
 
 def run_json(input_files, env, wf_info, run_name):
-    my_s3_util = s3Utils(env=env)
+    my_s3_util = s3_utils(env=env)
     out_bucket = my_s3_util.outfile_bucket
     """Creates the trigger json that is used by foufront endpoint.
     """
@@ -154,7 +154,7 @@ def run_json(input_files, env, wf_info, run_name):
 
 def find_pairs(my_rep_set, my_env, lookfor='pairs', exclude_miseq=True):
     auth = ff_utils.get_authentication_with_server({}, ff_env=my_env)
-    my_s3_util = s3Utils(env=my_env)
+    my_s3_util = s3_utils(env=my_env)
     """Find fastq files from experiment set, exclude miseq.
     """
     report = {}
@@ -614,7 +614,7 @@ def get_chip_files(exp_resp, my_auth):
 
 
 def run_missing_chip1(control, wf_info, organism, target_type, paired, files, obj_keys, my_env, my_key, run_name):
-    my_s3_util = s3Utils(env=my_env)
+    my_s3_util = s3_utils(env=my_env)
     raw_bucket = my_s3_util.raw_file_bucket
     out_bucket = my_s3_util.outfile_bucket
 
@@ -733,7 +733,7 @@ def run_missing_chip1(control, wf_info, organism, target_type, paired, files, ob
 
 def run_missing_chip2(control_set, wf_info, organism, target_type, paired,
                       ta, ta_xcor, ta_cnt, my_env, my_key, run_ids):
-    my_s3_util = s3Utils(env=my_env)
+    my_s3_util = s3_utils(env=my_env)
     raw_bucket = my_s3_util.raw_file_bucket
     out_bucket = my_s3_util.outfile_bucket
 
@@ -824,7 +824,7 @@ def run_missing_chip2(control_set, wf_info, organism, target_type, paired,
 
 
 def run_missing_atac1(wf_info, organism, paired, files, obj_keys, my_env, my_key, run_name):
-    my_s3_util = s3Utils(env=my_env)
+    my_s3_util = s3_utils(env=my_env)
     raw_bucket = my_s3_util.raw_file_bucket
     out_bucket = my_s3_util.outfile_bucket
 
@@ -926,7 +926,7 @@ def run_missing_atac1(wf_info, organism, paired, files, obj_keys, my_env, my_key
 
 def run_missing_atac2(wf_info, organism, paired, ta,
                       my_env, my_key, run_name):
-    my_s3_util = s3Utils(env=my_env)
+    my_s3_util = s3_utils(env=my_env)
     raw_bucket = my_s3_util.raw_file_bucket
     out_bucket = my_s3_util.outfile_bucket
 

@@ -10,7 +10,7 @@ from dcicutils.ff_utils import (
     patch_metadata,
     post_metadata,
 )
-from functions.script_utils import create_ff_arg_parser, convert_key_arg_to_dict
+from functions.script_utils import create_ff_arg_parser, authenticate
 
 
 def get_args():  # pragma: no cover
@@ -23,8 +23,6 @@ def get_args():  # pragma: no cover
     parser.add_argument('infile',
                         help="the datafile containing object data to import")
     args = parser.parse_args()
-    if args.key:
-        args.key = convert_key_arg_to_dict(args.key)
     return args
 
 
@@ -41,11 +39,7 @@ def main():  # pragma: no cover
     start = datetime.now()
     print(str(start))
     args = get_args()
-    try:
-        auth = get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
 
     phase2 = {}
     # assumes a single line corresponds to json for single term

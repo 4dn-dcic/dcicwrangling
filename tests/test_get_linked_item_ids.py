@@ -58,7 +58,7 @@ def test_is_released_no_status(mocker, auth):
 def test_gl_get_args_required_default():
     defaults = {
         'dbupdate': False,
-        'env': 'fourfront-mastertest',
+        'env': None,
         'include_released': False,
         'key': None,
         'no_children': None,
@@ -79,15 +79,11 @@ class MockedNamespace(object):
 
 
 @pytest.fixture
-def mocked_args_no_args():
-    return MockedNamespace({})
-
-
-@pytest.fixture
 def mocked_args_standard():
     return MockedNamespace(
         {
             'key': None,
+            'keyfile': None,
             'env': 'prod',
             'dbupdate': False,
             'input': 'i',
@@ -105,6 +101,7 @@ def mocked_args_plus():
     return MockedNamespace(
         {
             'key': None,
+            'keyfile': None,
             'env': 'prod',
             'dbupdate': False,
             'input': 'i',
@@ -122,6 +119,7 @@ def mocked_args_plus_more():
     return MockedNamespace(
         {
             'key': None,
+            'keyfile': None,
             'env': 'prod',
             'dbupdate': False,
             'input': 'i',
@@ -146,20 +144,12 @@ def got_item_ids():
     }
 
 
-def test_gl_main_no_auth(mocker, capsys, mocked_args_no_args):
-    with pytest.raises(SystemExit):
-        mocker.patch('scripts.get_linked_item_ids.get_args',
-                     return_value=mocked_args_no_args)
-        gli.main()
-        out = capsys.readouterr()[0]
-        assert out == "Authentication failed"
-
 
 def test_gl_main_standard(mocker, capsys, mocked_args_standard, auth, got_item_ids):
     se = [False] * 6
     mocker.patch('scripts.get_linked_item_ids.get_args',
                  return_value=mocked_args_standard)
-    mocker.patch('scripts.get_linked_item_ids.get_authentication_with_server',
+    mocker.patch('scripts.get_linked_item_ids.scu.authenticate',
                  return_value=auth)
     mocker.patch('scripts.generate_wfr_from_pf.scu.get_item_ids_from_args',
                  return_value=['test_eset_uuid'])
@@ -183,7 +173,7 @@ def test_gl_main_plus(mocker, capsys, mocked_args_plus, auth, got_item_ids):
     se = [False] * 5 + [True]
     mocker.patch('scripts.get_linked_item_ids.get_args',
                  return_value=mocked_args_plus)
-    mocker.patch('scripts.get_linked_item_ids.get_authentication_with_server',
+    mocker.patch('scripts.get_linked_item_ids.scu.authenticate',
                  return_value=auth)
     mocker.patch('scripts.generate_wfr_from_pf.scu.get_item_ids_from_args',
                  return_value=['test_eset_uuid'])
@@ -206,7 +196,7 @@ def test_gl_main_plus_more(mocker, capsys, mocked_args_plus_more, auth, got_item
     se = [False] * 5 + [True] + [False]
     mocker.patch('scripts.get_linked_item_ids.get_args',
                  return_value=mocked_args_plus_more)
-    mocker.patch('scripts.get_linked_item_ids.get_authentication_with_server',
+    mocker.patch('scripts.get_linked_item_ids.scu.authenticate',
                  return_value=auth)
     mocker.patch('scripts.generate_wfr_from_pf.scu.get_item_ids_from_args',
                  return_value=['test_eset_uuid', 'test_eset_uuid2'])

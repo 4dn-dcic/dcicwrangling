@@ -6,6 +6,16 @@ dcicwrangling
 Change Log
 ----------
 
+1.0.0
+=====
+
+`PR 89: update dependencies <https://github.com/4dn-dcic/dcicwrangling/pull/89>`
+
+* update some dependencies including using dcicutils 4.1 and up - this causes some breaking changes and it is likely that some notebooks may stop working - especially copies in untracked folders
+* updated script utils functions for validation and the scripts that use them to allow specification of key and keyfile as strings rather than previously used key dict passed to key argument
+* fixed tests to use new function
+
+
 0.5.6
 =====
 

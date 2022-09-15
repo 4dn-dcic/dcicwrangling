@@ -8,13 +8,13 @@ import sys
 import argparse
 import json
 from datetime import datetime
-from dcicutils.ff_utils import get_authentication_with_server, patch_metadata
-from functions.script_utils import create_ff_arg_parser, convert_key_arg_to_dict
+from dcicutils.ff_utils import patch_metadata
+from functions.script_utils import create_ff_arg_parser, authenticate
 
 
 def get_args():  # pragma: no cover
     parser = argparse.ArgumentParser(
-        description='Given a file of ontology term jsons (one per line) load into db',
+        description='Given a file of uuid<tab>json items (one per line) patch item in db',
         parents=[create_ff_arg_parser()],
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -22,8 +22,6 @@ def get_args():  # pragma: no cover
     parser.add_argument('infile',
                         help="the datafile containing object data to import")
     args = parser.parse_args()
-    if args.key:
-        args.key = convert_key_arg_to_dict(args.key)
     return args
 
 
@@ -31,11 +29,7 @@ def main():  # pragma: no cover
     start = datetime.now()
     print(str(start))
     args = get_args()
-    try:
-        auth = get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+    auth = authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
 
     # assumes a single line corresponds to json for single term
     if not args.dbupdate:

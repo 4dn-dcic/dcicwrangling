@@ -18,22 +18,16 @@ def get_args(args):
                         default='Set of preliminary processed files',
                         help="The title for the group of other processed files.")
     args = parser.parse_args()
-    if args.key:
-        args.key = scu.convert_key_arg_to_dict(args.key)
     return args
 
 
 def main():  # pragma: no cover
     args = get_args(sys.argv[1:])
-    try:
-        auth = get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+
 
     print('#', auth.get('server'))
     id_list = scu.get_item_ids_from_args(args.input, auth, args.search)
-
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
     for itemid in id_list:
         # get the existing data in other p
         item_data = get_metadata(itemid, auth, add_on='frame=raw')

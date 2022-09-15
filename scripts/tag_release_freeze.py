@@ -1,9 +1,12 @@
 import sys
 import argparse
 from collections import Counter
-from dcicutils.ff_utils import get_authentication_with_server, get_metadata, patch_metadata
+from dcicutils.ff_utils import get_metadata, patch_metadata
 from functions import script_utils as scu
 
+""" this is not currently used - was a mechanism to tag items with a particular 'release freeze' tag
+    however, we don't currently freeze releases - could become useful at some point
+"""
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -13,8 +16,6 @@ def get_args():
     parser.add_argument('reltag',
                         help="The release tag to query DataReleaseUpdates and add to items.")
     args = parser.parse_args()
-    if args.key:
-        args.key = scu.convert_key_arg_to_dict(args.key)
     return args
 
 
@@ -91,11 +92,7 @@ def add_tag2item(auth, iid, tag, seen, cnts, itype=None, dbupdate=False):
 def main():  # pragma: no cover
     args = get_args()
     dbupdate = args.dbupdate
-    try:
-        auth = get_authentication_with_server(args.key, args.env)
-    except Exception:
-        print("Authentication failed")
-        sys.exit(1)
+    auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
 
     cnts = Counter()
     reltag = args.reltag
