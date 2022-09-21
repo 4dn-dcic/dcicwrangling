@@ -121,6 +121,38 @@ def get_key(keyname=None, keyfile='keypairs.json'):
     return my_key
 
 
+def list_column_titles(sheet):
+    '''
+        Return a list of values in the first row of an xlsx sheet (typically column titles)
+    '''
+    col_titles = [cell for (cell,) in sheet.iter_cols(min_row=1, max_row=1, values_only=True)]
+    return col_titles
+
+
+def copy_xlsx_sheet(sheet_to_copy, workbook, sheet_title):
+    '''
+        Create a new sheet in the target workbook with the input title and
+        copy all values from the input sheet.
+    '''
+    new_sheet = workbook.create_sheet(title=sheet_title)
+    for row_index, row in enumerate(sheet_to_copy.values, start=1):
+        for col_index, cell_value in enumerate(row, start=1):
+            new_sheet.cell(row=row_index, column=col_index, value=cell_value)
+    return new_sheet, row_index
+
+
+def append_rows_to_xlsx(sheet, formatted_items, row_index):
+    '''
+        Given a sheet in an xlsx workbook and a list of items formatted to fit
+        exactly this sheet, it appends all items as new rows to the sheet,
+        starting AFTER the row index provided.
+    '''
+    for row_index_append, row_item in enumerate(formatted_items, start=row_index + 1):
+        for col_index, cell_value in enumerate(row_item, start=1):
+            sheet.cell(row=row_index_append, column=col_index, value=cell_value)
+    return sheet
+
+
 def append_items_to_xlsx(input_xlsx, add_items, schema_names, comment=True):
     output_file_name = "_with_items.".join(input_xlsx.split('.'))
     bookread = openpyxl.load_workbook(input_xlsx)
@@ -129,13 +161,10 @@ def append_items_to_xlsx(input_xlsx, add_items, schema_names, comment=True):
 
     for sheet in bookread.sheetnames:
         active_sheet = bookread[sheet]
-        first_row_values = [cell for (cell,) in active_sheet.iter_cols(min_row=1, max_row=1, values_only=True)]
+        first_row_values = list_column_titles(active_sheet)
 
         # create a new sheet and write the data
-        new_sheet = book_w.create_sheet(title=sheet)
-        for row_index, row in enumerate(active_sheet.values, start=1):
-            for col_index, cell_value in enumerate(row, start=1):
-                new_sheet.cell(row=row_index, column=col_index, value=cell_value)
+        new_sheet, n_copied_rows = copy_xlsx_sheet(active_sheet, book_w, sheet)
 
         # get items to add
         items_to_add = add_items.get(schema_names[sheet])
@@ -145,9 +174,7 @@ def append_items_to_xlsx(input_xlsx, add_items, schema_names, comment=True):
                 new_sheet, first_row_values = add_extra_path_columns(new_sheet, first_row_values, items_to_add)
             # append rows at the bottom
             formatted_items = format_items(items_to_add, first_row_values, comment)
-            for row_index_append, row_item in enumerate(formatted_items, start=row_index + 1):
-                for col_index, cell_value in enumerate(row_item, start=1):
-                    new_sheet.cell(row=row_index_append, column=col_index, value=cell_value)
+            new_sheet = append_rows_to_xlsx(new_sheet, formatted_items, n_copied_rows)
 
     book_w.save(output_file_name)
     print('new excel is stored as', output_file_name)
