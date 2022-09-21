@@ -141,7 +141,7 @@ def copy_xlsx_sheet(sheet_to_copy, workbook, sheet_title):
     return new_sheet, row_index
 
 
-def append_rows_to_xlsx(sheet, formatted_items, row_index):
+def append_xlsx_rows_formatted(sheet, formatted_items, row_index):
     '''
         Given a sheet in an xlsx workbook and a list of items formatted to fit
         exactly this sheet, it appends all items as new rows to the sheet,
@@ -174,7 +174,7 @@ def append_items_to_xlsx(input_xlsx, add_items, schema_names, comment=True):
                 new_sheet, first_row_values = add_extra_path_columns(new_sheet, first_row_values, items_to_add)
             # append rows at the bottom
             formatted_items = format_items(items_to_add, first_row_values, comment)
-            new_sheet = append_rows_to_xlsx(new_sheet, formatted_items, n_copied_rows)
+            new_sheet = append_xlsx_rows_formatted(new_sheet, formatted_items, n_copied_rows)
 
     book_w.save(output_file_name)
     print('new excel is stored as', output_file_name)
