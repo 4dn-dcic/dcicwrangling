@@ -63,7 +63,7 @@ class Experiment:
             try:
                 handle = handle_timeout(Entrez.efetch(db="sra", id=self.link))
                 text = handle.read()
-                record = ET.fromstring(text[text.index('<EXPERIMENT_PACKAGE>'):text.index('\n</EXPERIMENT_PACKAGE_SET>')])
+                record = ET.fromstring(text[text.index('<EXPERIMENT_PACKAGE>'):text.index('</EXPERIMENT_PACKAGE_SET>')])
             except Exception:
                 print("Couldn't parse {} from {}".format(self.link, self.geo))
                 return
