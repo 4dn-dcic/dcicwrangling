@@ -299,8 +299,8 @@ def append_xlsx_rows_unformatted(sheet, content_dict):
         in the dictionary will get an empty string. The row is appended at the
         bottom of the sheet.
     '''
-    fields = nbf.list_column_titles(sheet)
-    content_row = ['' for i in len(fields)]
+    fields = list_column_titles(sheet)
+    content_row = ['' for i in range(len(fields))]
     for field in content_dict:
         if field in fields:
             content_row[fields.index(field)] = content_dict[field]
@@ -377,7 +377,7 @@ def modify_xlsx(geo, infile, outfile, alias_prefix, experiment_type=None, types=
     outbook = openpyxl.Workbook()
     outbook.remove(outbook.active)  # removes the empty sheet created by default named Sheet
     for sheet_name in book.sheetnames:
-        new_sheet, = nbf.copy_xlsx_sheet(book[sheet_name], outbook, sheet_name)
+        new_sheet = copy_xlsx_sheet(book[sheet_name], outbook, sheet_name)[0]
 
     get_organisms = requests.get('https://data.4dnucleome.org/search/?type=Organism&frame=object&format=json')
     organisms = [d['scientific_name'] for d in get_organisms.json()['@graph'] if d.get('scientific_name')]
