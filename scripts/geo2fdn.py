@@ -190,7 +190,7 @@ def get_geo_metadata(acc, experiment_type=None):
         # delete file after GSMs are parsed
         if '/' not in acc:  # pragma: no cover
             print('GEO parsing done. Removing downloaded soft file.')
-            os.remove('{}_family.soft.gz'.format(acc))
+            os.remove(f'{acc}_family.soft.gz')
         if not experiments:
             print('Sequencing experiments not found. Exiting.')
             return
@@ -205,7 +205,7 @@ def get_geo_metadata(acc, experiment_type=None):
         exp = parse_gsm(gsm, experiment_type)
         print("GEO parsing done. Removing downloaded soft file.")
         try:
-            os.remove('{}.txt'.format(acc))  # delete file after GSM is parsed
+            os.remove(f'{acc}.txt')  # delete file after GSM is parsed
         except Exception:
             pass
         if not exp:
@@ -248,7 +248,7 @@ def parse_bs_record(bs_acc):
                 treatments = atts[name]
                 if not sum([term in treatments.lower() for term in ['blank', 'none', 'n/a']]):
                     # print message to indicate that Treatment tab will need to be filled
-                    print("BioSample accession %s has treatment attribute" % acc,
+                    print(f"BioSample accession {acc} has treatment attribute",
                           "but treatment not written to file")
     descr = descr.rstrip(' | ')
     bs = Biosample(acc, org[0], descr)
@@ -273,26 +273,20 @@ def get_geo_tables(geo_acc, outf, lab_alias='4dn-dcic-lab', email='', types=type
     gds = get_geo_metadata(geo_acc, experiment_type=None)
     with open(outf + '_expts.tsv', 'w') as outfile:
         for exp in gds.experiments:
-            outfile.write('%s:%s\t%s\t%s\t%s\t%s\tGEO:%s\n' %
-                          (lab_alias, exp.geo, exp.title, types[exp.exptype], exp.bs,
-                           ','.join(exp.runs), exp.geo))
+            outfile.write(f'{lab_alias}:{exp.geo}\t{exp.title}\t{types[exp.exptype]}\t{exp.bs,}\t{",".join(exp.runs)}\tGEO:{exp.geo}\n')
     with open(outf + '_fqs.tsv', 'w') as outfile:
         for exp in gds.experiments:
             if exp.layout == 'single':  # single end reads
                 for run in exp.runs:
-                    outfile.write('%s:%s_fq\t%s\tfastq\t \t \t \t%s\t%s\tSRA:%s\n' %
-                                  (lab_alias, run, exp.title, str(exp.length), exp.instr, run))
+                    outfile.write(f'{lab_alias}:{run}_fq\t{exp.title}\tfastq\t \t \t \t{str(exp.length)}\t{exp.instr}\tSRA:{run}\n')
             elif exp.layout == 'paired':  # paired end reads
                 for run in exp.runs:
                     alias = lab_alias + ':' + run
-                    outfile.write('%s_fq1\t%s\tfastq\t1\tpaired with\t%s_fq2\t%s\t%s\tSRA:%s\n' %
-                                  (alias, exp.title, alias, str(exp.length), exp.instr, run))
-                    outfile.write('%s_fq2\t%s\tfastq\t2\tpaired with\t%s_fq1\t%s\t%s\tSRA:%s\n' %
-                                  (alias, exp.title, alias, str(exp.length), exp.instr, run))
+                    outfile.write(f'{alias}_fq1\t{exp.title}\tfastq\t1\tpaired with\t{alias}_fq2\t{str(exp.length)}\t{exp.instr}\tSRA:{run}\n')
+                    outfile.write(f'{alias}_fq2\t{exp.title}\tfastq\t2\tpaired with\t{alias}_fq1\t{str(exp.length)}\t{exp.instr}\tSRA:{run}\n')
     with open(outf + '_bs.tsv', 'w') as outfile:
         for biosample in gds.biosamples:
-            outfile.write('%s:%s\t%s\tBioSample:%s\n' %
-                          (lab_alias, biosample.acc, biosample.description, biosample.acc))
+            outfile.write(f'{lab_alias}:{biosample.acc}\t{biosample.description}\tBioSample:{biosample.acc}\n')
 
 
 def append_xlsx_rows_unformatted(sheet, content_dict):
@@ -499,8 +493,7 @@ def modify_xlsx(geo, infile, outfile, alias_prefix, experiment_type=None, types=
             other = [e for e in other if e.exptype not in skip]
         if other:
             if len(other) + len(skipped) == len(gds.experiments):
-                print("\nExperiment types of dataset could not be parsed. %s sheet not written" %
-                      ', '.join(exp_sheets))
+                print(f"\nExperiment types of dataset could not be parsed. {', '.join(exp_sheets)} sheet not written")
             else:
                 print("\nThe following accessions had experiment types that could not be parsed:")
                 for item in other:
@@ -509,7 +502,7 @@ def modify_xlsx(geo, infile, outfile, alias_prefix, experiment_type=None, types=
                   "this script can be rerun using -t <experiment_type>")
 
     outbook.save(outfile)
-    print("\nWrote file to %s." % outfile)
+    print(f"\nWrote file to {outfile}.")
     return
 
 
@@ -539,7 +532,7 @@ def main(types=valid_types, descr=description, epilog=epilog):  # pragma: no cov
     args = parser.parse_args()
     out_file = args.outfile if args.outfile else args.geo_accession + '.xlsx'
     if args.type and args.type.lower().replace('-', '') not in types:
-        print("\nError: %s not a recognized type\n" % args.type)
+        print(f"\nError: {args.type} not a recognized type\n")
         parser.print_help()
         sys.exit()
     if not args.email:

@@ -156,7 +156,7 @@ def test_get_geo_tables(mocker, bs_obj, exp_with_sra):
         fq_out = fq_file.readlines()
     assert not any('paired with' in line for line in fq_out)
     for item in ['expts', 'fqs', 'bs']:
-        os.remove('./tests/data_files/test_table_{}.tsv'.format(item))
+        os.remove(f'./tests/data_files/test_table_{item}.tsv')
 
 
 def test_get_geo_tables_pe(mocker, bs_obj, exp_with_sra_pe):
@@ -167,7 +167,7 @@ def test_get_geo_tables_pe(mocker, bs_obj, exp_with_sra_pe):
         fq_out = fq_file.readlines()
     assert all('paired with' in line for line in fq_out)
     for item in ['expts', 'fqs', 'bs']:
-        os.remove('./tests/data_files/test_table_{}.tsv'.format(item))
+        os.remove(f'./tests/data_files/test_table_{item}.tsv')
 
 
 def test_modify_xls(mocker, bs_obj, exp_with_sra):
@@ -277,17 +277,17 @@ def run_compare(capfd, exp_with_sra, template, exp_type, sheet):
 def test_experiment_type_compare_nosheet_exp(capfd, exp_with_sra):
     out, acc = run_compare(capfd, exp_with_sra, './tests/data_files/capturec_seq_template.xls',
                            'repliseq', 'ExperimentRepliseq')
-    assert 'Repliseq experiments found in {} but no ExperimentRepliseq sheet'.format(acc) in out
+    assert f'Repliseq experiments found in {acc} but no ExperimentRepliseq sheet' in out
 
 
 def test_experiment_type_compare_sheet_noexp(capfd, exp_with_sra):
     out, acc = run_compare(capfd, exp_with_sra, './tests/data_files/capturec_seq_template.xls',
                            'capturec', 'ExperimentCaptureC')
-    assert 'No CaptureC experiments parsed from {}.'.format(acc) in out
+    assert f'No CaptureC experiments parsed from {acc}.' in out
 
 
 def test_experiment_type_compare_sheet_exp(capfd, exp_with_sra):
     out, acc = run_compare(capfd, exp_with_sra, './tests/data_files/repliseq_template.xls',
                            'repliseq', 'ExperimentRepliseq')
-    assert 'No Repliseq experiments parsed from {}.'.format(acc) not in out
-    assert 'Repliseq experiments found in {} but no ExperimentRepliseq sheet'.format(acc) not in out
+    assert f'No Repliseq experiments parsed from {acc}.' not in out
+    assert f'Repliseq experiments found in {acc} but no ExperimentRepliseq sheet' not in out
