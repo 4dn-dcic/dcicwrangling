@@ -17,6 +17,7 @@ Change Log
 * Remove xlrd, xlwt, xlutils dependencies in the entire repo, as this script was
   the only remaining one to be upgraded to use openpyxl.
   This could be a breaking change in case of untracked scripts/notebooks.
+* Bug fix in geo2fdn script: FileFastq tab is now written properly.
 
 
 1.0.0
