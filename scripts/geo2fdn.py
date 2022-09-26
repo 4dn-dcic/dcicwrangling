@@ -9,8 +9,8 @@ import sys
 import time
 from statistics import mean
 import xml.etree.ElementTree as ET
-import xlrd
-from xlutils.copy import copy
+import openpyxl
+from functions.notebook_functions import list_column_titles, copy_xlsx_sheet
 from Bio import Entrez
 from urllib.error import HTTPError
 import GEOparse
@@ -31,9 +31,9 @@ work properly for sequences in dbgap, but hope to implement this in the future.
 epilog = '''
 Example usage:
 
-$ python scripts/geo2fdn.py GSE93431 -i hic_rnaseq_workbook.xls -o GSE93431_metadata.xls
+$ python scripts/geo2fdn.py GSE93431 -i hic_rnaseq_workbook.xlsx -o GSE93431_metadata.xlsx
 
-$ python scripts/geo2fdn.py GSE68992 -i hic_workbook.xls -o GSE68992_metadata.xls -t 'dnase hic'
+$ python scripts/geo2fdn.py GSE68992 -i hic_workbook.xlsx -o GSE68992_metadata.xlsx -t 'dnase hic'
 
 '''
 
@@ -63,7 +63,7 @@ class Experiment:
             try:
                 handle = handle_timeout(Entrez.efetch(db="sra", id=self.link))
                 text = handle.read()
-                record = ET.fromstring(text[text.index('<EXPERIMENT_PACKAGE>'):text.index('\n</EXPERIMENT_PACKAGE_SET>')])
+                record = ET.fromstring(text[text.index('<EXPERIMENT_PACKAGE>'):text.index('</EXPERIMENT_PACKAGE_SET>')])
             except Exception:
                 print("Couldn't parse {} from {}".format(self.link, self.geo))
                 return
@@ -190,7 +190,7 @@ def get_geo_metadata(acc, experiment_type=None):
         # delete file after GSMs are parsed
         if '/' not in acc:  # pragma: no cover
             print('GEO parsing done. Removing downloaded soft file.')
-            os.remove('{}_family.soft.gz'.format(acc))
+            os.remove(f'{acc}_family.soft.gz')
         if not experiments:
             print('Sequencing experiments not found. Exiting.')
             return
@@ -205,7 +205,7 @@ def get_geo_metadata(acc, experiment_type=None):
         exp = parse_gsm(gsm, experiment_type)
         print("GEO parsing done. Removing downloaded soft file.")
         try:
-            os.remove('{}.txt'.format(acc))  # delete file after GSM is parsed
+            os.remove(f'{acc}.txt')  # delete file after GSM is parsed
         except Exception:
             pass
         if not exp:
@@ -248,7 +248,7 @@ def parse_bs_record(bs_acc):
                 treatments = atts[name]
                 if not sum([term in treatments.lower() for term in ['blank', 'none', 'n/a']]):
                     # print message to indicate that Treatment tab will need to be filled
-                    print("BioSample accession %s has treatment attribute" % acc,
+                    print(f"BioSample accession {acc} has treatment attribute",
                           "but treatment not written to file")
     descr = descr.rstrip(' | ')
     bs = Biosample(acc, org[0], descr)
@@ -273,26 +273,39 @@ def get_geo_tables(geo_acc, outf, lab_alias='4dn-dcic-lab', email='', types=type
     gds = get_geo_metadata(geo_acc, experiment_type=None)
     with open(outf + '_expts.tsv', 'w') as outfile:
         for exp in gds.experiments:
-            outfile.write('%s:%s\t%s\t%s\t%s\t%s\tGEO:%s\n' %
-                          (lab_alias, exp.geo, exp.title, types[exp.exptype], exp.bs,
-                           ','.join(exp.runs), exp.geo))
+            outfile.write(f'{lab_alias}:{exp.geo}\t{exp.title}\t{types[exp.exptype]}\t{exp.bs,}\t{",".join(exp.runs)}\tGEO:{exp.geo}\n')
     with open(outf + '_fqs.tsv', 'w') as outfile:
         for exp in gds.experiments:
             if exp.layout == 'single':  # single end reads
                 for run in exp.runs:
-                    outfile.write('%s:%s_fq\t%s\tfastq\t \t \t \t%s\t%s\tSRA:%s\n' %
-                                  (lab_alias, run, exp.title, str(exp.length), exp.instr, run))
+                    outfile.write(f'{lab_alias}:{run}_fq\t{exp.title}\tfastq\t \t \t \t{str(exp.length)}\t{exp.instr}\tSRA:{run}\n')
             elif exp.layout == 'paired':  # paired end reads
                 for run in exp.runs:
                     alias = lab_alias + ':' + run
-                    outfile.write('%s_fq1\t%s\tfastq\t1\tpaired with\t%s_fq2\t%s\t%s\tSRA:%s\n' %
-                                  (alias, exp.title, alias, str(exp.length), exp.instr, run))
-                    outfile.write('%s_fq2\t%s\tfastq\t2\tpaired with\t%s_fq1\t%s\t%s\tSRA:%s\n' %
-                                  (alias, exp.title, alias, str(exp.length), exp.instr, run))
+                    outfile.write(f'{alias}_fq1\t{exp.title}\tfastq\t1\tpaired with\t{alias}_fq2\t{str(exp.length)}\t{exp.instr}\tSRA:{run}\n')
+                    outfile.write(f'{alias}_fq2\t{exp.title}\tfastq\t2\tpaired with\t{alias}_fq1\t{str(exp.length)}\t{exp.instr}\tSRA:{run}\n')
     with open(outf + '_bs.tsv', 'w') as outfile:
         for biosample in gds.biosamples:
-            outfile.write('%s:%s\t%s\tBioSample:%s\n' %
-                          (lab_alias, biosample.acc, biosample.description, biosample.acc))
+            outfile.write(f'{lab_alias}:{biosample.acc}\t{biosample.description}\tBioSample:{biosample.acc}\n')
+
+
+def append_xlsx_rows_unformatted(sheet, content_dict):
+    '''
+        Appends content as a row to the given xlsx sheet. The sheet must have
+        column names in the first row. The content to append must be formatted
+        as a dictionary with column:value where column matches a column name
+        from the sheet and value is a string. Dictionary keys that do not match
+        the sheet columns are ignored. Sheet columns for which no key is present
+        in the dictionary will get an empty string. The row is appended at the
+        bottom of the sheet.
+    '''
+    fields = list_column_titles(sheet)
+    content_row = ['' for i in range(len(fields))]
+    for field in content_dict:
+        if field in fields:
+            content_row[fields.index(field)] = content_dict[field]
+    sheet.append(content_row)
+    return sheet
 
 
 def write_experiments(sheet_name, experiments, alias_prefix, file_dict, inbook, outbook, types=type_dict):
@@ -303,28 +316,23 @@ def write_experiments(sheet_name, experiments, alias_prefix, file_dict, inbook, 
     Writes alias, description, biosample, files, dbxrefs, and experiment_type
     fields, as appropriate.
     '''
-    sheet_dict = {}
-    fields = inbook.sheet_by_name(sheet_name).row_values(0)
-    for item in fields:
-        sheet_dict[item] = fields.index(item)
-    sheet = outbook.get_sheet(sheet_name)
-    row = inbook.sheet_by_name(sheet_name).nrows
-    print("Writing %s sheet..." % sheet_name)
-    for entry in experiments:
-        # if entry.exptype in ['chipseq', 'rnaseq', 'tsaseq']:
-        sheet.write(row, sheet_dict['aliases'], alias_prefix + ':' + entry.geo)
-        sheet.write(row, sheet_dict['description'], entry.title)
-        if 'Biosample' in inbook.sheet_names():
-            sheet.write(row, sheet_dict['*biosample'], alias_prefix + ':' + entry.bs)
-        if 'FileFastq' in inbook.sheet_names():
-            sheet.write(row, sheet_dict['files'], ','.join(file_dict[entry.geo]))
-        refs = 'GEO:' + entry.geo
-        if entry.link:
-            refs += ', SRA:' + entry.link
-        sheet.write(row, sheet_dict['dbxrefs'], refs)
-        if entry.exptype in type_dict.keys():
-            sheet.write(row, sheet_dict['*experiment_type'], types[entry.exptype])
-        row += 1
+    sheet = outbook[sheet_name]
+    print(f"Writing {sheet_name} sheet...")
+    for exp in experiments:
+        content_dict = {
+            'aliases': alias_prefix + ':' + exp.geo,
+            'description': exp.title,
+            'dbxrefs': 'GEO:' + exp.geo
+        }
+        if 'Biosample' in inbook.sheetnames:
+            content_dict['*biosample'] = alias_prefix + ':' + exp.bs
+        if 'FileFastq' in inbook.sheetnames:
+            content_dict['files'] = ','.join(file_dict[exp.geo])
+        if exp.link:
+            content_dict['dbxrefs'] += ', SRA:' + exp.link
+        if exp.exptype in types:
+            content_dict['*experiment_type'] = types[exp.exptype]
+        sheet = append_xlsx_rows_unformatted(sheet, content_dict)
     return outbook
 
 
@@ -338,20 +346,21 @@ def experiment_type_compare(sheetname, expt_list, geo, inbook):
                  'Seq': 'ChIP-seq, RNA-seq, SPRITE, or TSA-seq'}
     expt_name = sheetname[10:] if sheetname[10:] not in expt_dict.keys() else expt_dict[sheetname[10:]]
     type_name = sheetname[10:] if sheetname != 'ExperimentSeq' else '<experiment_type>'
-    if sheetname in inbook.sheet_names() and expt_list:
+    if sheetname in inbook.sheetnames and expt_list:
         return True
-    elif sheetname in inbook.sheet_names() and not expt_list:
-        print("\nNo {} experiments parsed from {}.".format(expt_name, geo))
-        print("If all samples are known to be {} experiments,".format(expt_name))
-        print("this script can be rerun using -t {}".format(type_name))
-    elif sheetname not in inbook.sheet_names() and expt_list:
-        print("\n{} experiments found in {} but no {} sheet".format(expt_name, geo, sheetname))
-        print("present in workbook. {} experiments will not be written to file.".format(
-              expt_name if sheetname != 'ExperimentSeq' else 'These'))
+    elif sheetname in inbook.sheetnames and not expt_list:
+        print(f"\nNo {expt_name} experiments parsed from {geo}.")
+        print(f"If all samples are known to be {expt_name} experiments,")
+        print(f"this script can be rerun using -t {type_name}")
+    elif sheetname not in inbook.sheetnames and expt_list:
+        print(f"\n{expt_name} experiments found in {geo} but no {sheetname} sheet")
+        print("present in workbook.",
+              expt_name if sheetname != 'ExperimentSeq' else 'These',
+              "experiments will not be written to file.")
     return False
 
 
-def modify_xls(geo, infile, outfile, alias_prefix, experiment_type=None, types=valid_types):
+def modify_xlsx(geo, infile, outfile, alias_prefix, experiment_type=None, types=valid_types):
     '''
     Looks up a GEO Series record, parses it along with its associated SRA and
     BioSample records, and writes relevant attributes to the specified file. An
@@ -362,15 +371,20 @@ def modify_xls(geo, infile, outfile, alias_prefix, experiment_type=None, types=v
     gds = get_geo_metadata(geo, experiment_type)
     if not gds:
         return
-    book = xlrd.open_workbook(infile)
-    outbook = copy(book)
+    book = openpyxl.load_workbook(infile)
+
+    # copy book to outbook
+    outbook = openpyxl.Workbook()
+    outbook.remove(outbook.active)  # removes the empty sheet created by default named Sheet
+    for sheet_name in book.sheetnames:
+        new_sheet = copy_xlsx_sheet(book[sheet_name], outbook, sheet_name)[0]
 
     get_organisms = requests.get('https://data.4dnucleome.org/search/?type=Organism&frame=object&format=json')
     organisms = [d['scientific_name'] for d in get_organisms.json()['@graph'] if d.get('scientific_name')]
     bs_to_write = [bs.acc for bs in gds.biosamples if bs.organism in organisms]
     exp_to_write = [exp for exp in gds.experiments if exp.public and exp.bs in bs_to_write]
 
-    exp_sheets = [name for name in book.sheet_names() if name.startswith('Experiment')]
+    exp_sheets = [name for name in book.sheetnames if name.startswith('Experiment')]
     if len(exp_sheets) > 0:
         # looks for each experiment type in parsed data
         # then looks for relevant worksheet in excel template
@@ -395,47 +409,35 @@ def modify_xls(geo, infile, outfile, alias_prefix, experiment_type=None, types=v
                 keep += sheet_types[key]
                 keep_keys.append(key)
 
-    if 'Biosample' in book.sheet_names():
-        sheet_dict_bs = {}
-        bs_sheets = book.sheet_by_name('Biosample').row_values(0)
-        for item in bs_sheets:
-            sheet_dict_bs[item] = bs_sheets.index(item)
-        bs = outbook.get_sheet('Biosample')
-        row = book.sheet_by_name('Biosample').nrows
+    if 'Biosample' in book.sheetnames:
+        bs_sheet = outbook['Biosample']
         print("Writing Biosample sheet...")
         for entry in gds.biosamples:
             if entry.acc in bs_to_write and entry.acc in [item.bs for item in keep]:
                 # write each Biosample object to file
-                alias = alias_prefix + ':' + entry.acc
-                bs.write(row, sheet_dict_bs['aliases'], alias)
-                bs.write(row, sheet_dict_bs['description'], entry.description)
-                if 'BiosampleCellCulture' in book.sheet_names():
-                    bs.write(row, sheet_dict_bs['cell_culture_details'], alias + '-cellculture')
-                bs.write(row, sheet_dict_bs['dbxrefs'], 'BioSample:' + entry.acc)
-                row += 1
+                content_dict = {
+                    'aliases': alias_prefix + ':' + entry.acc,
+                    'description': entry.description,
+                    'dbxrefs': 'BioSample:' + entry.acc
+                }
+                if 'BiosampleCellCulture' in book.sheetnames:
+                    content_dict['cell_culture_details'] = alias_prefix + ':' + entry.acc + '-cellculture'
+                bs_sheet = append_xlsx_rows_unformatted(bs_sheet, content_dict)
 
-    if 'BiosampleCellCulture' in book.sheet_names():
-        sheet_dict_bcc = {}
-        bcc_sheets = book.sheet_by_name('BiosampleCellCulture').row_values(0)
-        for item in bcc_sheets:
-            sheet_dict_bcc[item] = bcc_sheets.index(item)
-        bcc = outbook.get_sheet('BiosampleCellCulture')
-        row = book.sheet_by_name('BiosampleCellCulture').nrows
+    if 'BiosampleCellCulture' in book.sheetnames:
+        bcc_sheet = outbook['BiosampleCellCulture']
         print("Writing BiosampleCellCulture sheet...")
         for entry in gds.biosamples:
             if entry.acc in bs_to_write and entry.acc in [item.bs for item in keep]:
                 # generate aliases for BiosampleCellCulture sheet
-                bcc.write(row, sheet_dict_bcc['aliases'], alias_prefix + ':' + entry.acc + '-cellculture')
-                row += 1
+                content_dict = {
+                    'aliases': alias_prefix + ':' + entry.acc + '-cellculture'
+                }
+                bcc_sheet = append_xlsx_rows_unformatted(bcc_sheet, content_dict)
 
     file_dict = {}
-    if 'FileFastq' in book.sheet_names():
-        sheet_dict_fq = {}
-        fq_sheets = book.sheet_by_name('FileFastq').row_values(0)
-        for item in fq_sheets:
-            sheet_dict_fq[item] = fq_sheets.index(item)
-        fq = outbook.get_sheet('FileFastq')
-        row = book.sheet_by_name('FileFastq').nrows
+    if 'FileFastq' in book.sheetnames:
+        fq_sheet = outbook['FileFastq']
         print("Writing FileFastq sheet...")
         for entry in gds.experiments:
             if entry.bs in bs_to_write and entry in keep:
@@ -443,34 +445,33 @@ def modify_xls(geo, infile, outfile, alias_prefix, experiment_type=None, types=v
                 for run in entry.runs:
                     # write information about SRA runs to file -
                     # assumes they will be downloaded as fastq files
+                    content_dict = {
+                        '*file_format': 'fastq',
+                        'read_length': entry.length,
+                        'instrument': entry.instr,
+                        'dbxrefs': 'SRA:' + run
+                    }
                     if entry.layout.lower() == 'paired':
                         fq1 = alias_prefix + ':' + run + '_1_fq'
                         fq2 = alias_prefix + ':' + run + '_2_fq'
                         file_dict[entry.geo] += [fq1, fq2]
-                        fq.write(row, sheet_dict_fq['aliases'], fq1)
-                        fq.write(row, sheet_dict_fq['*file_format'], 'fastq')
-                        fq.write(row, sheet_dict_fq['paired_end'], '1')
-                        fq.write(row, sheet_dict_fq['related_files.relationship_type'], 'paired with')
-                        fq.write(row, sheet_dict_fq['related_files.file'], fq2)
-                        fq.write(row, sheet_dict_fq['read_length'], entry.length)
-                        fq.write(row, sheet_dict_fq['instrument'], entry.instr)
-                        fq.write(row, sheet_dict_fq['dbxrefs'], 'SRA:' + run)
-                        fq.write(row + 1, sheet_dict_fq['aliases'], fq2)
-                        fq.write(row + 1, sheet_dict_fq['*file_format'], 'fastq')
-                        fq.write(row + 1, sheet_dict_fq['paired_end'], '2')
-                        fq.write(row + 1, sheet_dict_fq['read_length'], entry.length)
-                        fq.write(row + 1, sheet_dict_fq['instrument'], entry.instr)
-                        fq.write(row + 1, sheet_dict_fq['dbxrefs'], 'SRA:' + run)
-                        row += 2
+                        content_dict_fq1 = {k: v for k, v in content_dict.items()}
+                        content_dict_fq1['aliases'] = fq1
+                        content_dict_fq1['paired_end'] = '1'
+                        content_dict_fq1['related_files.relationship_type'] = 'paired with'
+                        content_dict_fq1['related_files.file'] = fq2
+                        fq_sheet = append_xlsx_rows_unformatted(fq_sheet, content_dict_fq1)
+                        content_dict_fq2 = {k: v for k, v in content_dict.items()}
+                        content_dict_fq2['aliases'] = fq2
+                        content_dict_fq2['paired_end'] = '2'
+                        fq_sheet = append_xlsx_rows_unformatted(fq_sheet, content_dict_fq2)
+
                     elif entry.layout.lower() == 'single':
                         fq_0 = alias_prefix + ':' + run + '_fq'
                         file_dict[entry.geo] += [fq_0]
-                        fq.write(row, sheet_dict_fq['aliases'], fq_0)
-                        fq.write(row, sheet_dict_fq['*file_format'], 'fastq')
-                        fq.write(row, sheet_dict_fq['read_length'], entry.length)
-                        fq.write(row, sheet_dict_fq['instrument'], entry.instr)
-                        fq.write(row, sheet_dict_fq['dbxrefs'], 'SRA:' + run)
-                        row += 1
+                        content_dict['aliases'] = fq_0
+                        fq_sheet = append_xlsx_rows_unformatted(fq_sheet, content_dict)
+
                     else:
                         raise ValueError("Invalid value for layout. Layout must be 'single' or 'paired'.")
 
@@ -492,8 +493,7 @@ def modify_xls(geo, infile, outfile, alias_prefix, experiment_type=None, types=v
             other = [e for e in other if e.exptype not in skip]
         if other:
             if len(other) + len(skipped) == len(gds.experiments):
-                print("\nExperiment types of dataset could not be parsed. %s sheet not written" %
-                      ', '.join(exp_sheets))
+                print(f"\nExperiment types of dataset could not be parsed. {', '.join(exp_sheets)} sheet not written")
             else:
                 print("\nThe following accessions had experiment types that could not be parsed:")
                 for item in other:
@@ -502,7 +502,7 @@ def modify_xls(geo, infile, outfile, alias_prefix, experiment_type=None, types=v
                   "this script can be rerun using -t <experiment_type>")
 
     outbook.save(outfile)
-    print("\nWrote file to %s." % outfile)
+    print(f"\nWrote file to {outfile}.")
     return
 
 
@@ -510,10 +510,10 @@ def main(types=valid_types, descr=description, epilog=epilog):  # pragma: no cov
     parser = argparse.ArgumentParser(description=descr, epilog=epilog,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('geo_accession', help="GEO accession", action="store")
-    parser.add_argument('-i', '--infile', help="Input xls file - blank submit4dn workbook",
+    parser.add_argument('-i', '--infile', help="Input xlsx file - blank submit4dn workbook",
                         action="store", required=True)
-    parser.add_argument('-o', '--outfile', help="Output xls file - default output \
-                        filename will be GEO accession with xls extension",
+    parser.add_argument('-o', '--outfile', help="Output xlsx file - default output \
+                        filename will be GEO accession with xlsx extension",
                         default='', action="store")
     parser.add_argument('-a', '--alias', help="Alias prefix, default is '4dn-dcic-lab'",
                         action="store", default="4dn-dcic-lab")
@@ -530,9 +530,9 @@ def main(types=valid_types, descr=description, epilog=epilog):  # pragma: no cov
                         doesn't include multiple experiment types.",
                         action="store", default=None)
     args = parser.parse_args()
-    out_file = args.outfile if args.outfile else args.geo_accession + '.xls'
+    out_file = args.outfile if args.outfile else args.geo_accession + '.xlsx'
     if args.type and args.type.lower().replace('-', '') not in types:
-        print("\nError: %s not a recognized type\n" % args.type)
+        print(f"\nError: {args.type} not a recognized type\n")
         parser.print_help()
         sys.exit()
     if not args.email:
@@ -541,7 +541,7 @@ def main(types=valid_types, descr=description, epilog=epilog):  # pragma: no cov
         Entrez.email = args.email
     if args.apikey:
         Entrez.api_key = args.apikey
-    modify_xls(args.geo_accession, args.infile, out_file, args.alias, experiment_type=args.type)
+    modify_xlsx(args.geo_accession, args.infile, out_file, args.alias, experiment_type=args.type)
 
 
 if __name__ == '__main__':  # pragma: no cover
