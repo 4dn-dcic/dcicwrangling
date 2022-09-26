@@ -507,6 +507,7 @@ ORDER = [
     'modification',
     'protocol',
     'sop_map',
+    'experiment_type',
     'biosample_cell_culture',
     'individual_human',
     'individual_mouse',
