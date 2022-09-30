@@ -527,7 +527,7 @@ ORDER = [
     'quality_metric_dedupqc_repliseq',
     'quality_metric_chipseq',
     'quality_metric_atacseq',
-    'quality_metric_workflowrun'
+    'quality_metric_workflowrun',
     'microscope_setting_d1',
     'microscope_setting_d2',
     'microscope_setting_a1',
