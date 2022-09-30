@@ -496,6 +496,8 @@ ORDER = [
     'badge',
     'organism',
     'genomic_region',
+    'gene',
+    'bio_feature',
     'target',
     'imaging_path',
     'publication',
@@ -525,6 +527,7 @@ ORDER = [
     'quality_metric_dedupqc_repliseq',
     'quality_metric_chipseq',
     'quality_metric_atacseq',
+    'quality_metric_workflowrun'
     'microscope_setting_d1',
     'microscope_setting_d2',
     'microscope_setting_a1',
