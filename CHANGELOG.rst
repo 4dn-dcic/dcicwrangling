@@ -6,6 +6,12 @@ dcicwrangling
 Change Log
 ----------
 
+1.2.0
+=====
+
+* Added new notebook to replace uploaded files and delete linked items.
+
+
 1.1.0
 =====
 
