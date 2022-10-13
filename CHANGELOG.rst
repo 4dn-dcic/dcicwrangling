@@ -6,6 +6,12 @@ dcicwrangling
 Change Log
 ----------
 
+1.2.1
+=====
+
+* Fix a bug in status level for UserContent items.
+
+
 1.2.0
 =====
 
