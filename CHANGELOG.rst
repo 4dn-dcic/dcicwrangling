@@ -6,6 +6,13 @@ dcicwrangling
 Change Log
 ----------
 
+1.2.2
+=====
+
+* Small improvements in the notebook to replace uploaded files, adding
+  extra_files and improving the search query and variable names.
+
+
 1.2.1
 =====
 
