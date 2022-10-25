@@ -11,6 +11,7 @@ Change Log
 
 * Small improvements in the notebook to replace uploaded files, adding
   extra_files and improving the search query and variable names.
+* Bug fix: some "empty" cells were not handled correctly.
 
 
 1.2.1
