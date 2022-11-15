@@ -116,3 +116,6 @@ notebooks/CGAP
 notebooks/CGAP/*
 notebooks/PipelineRuns
 notebooks/PipelineRuns/*
+
+# PyCharm metadata
+.idea/
