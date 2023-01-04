@@ -6,6 +6,13 @@ dcicwrangling
 Change Log
 ----------
 
+1.2.3
+=====
+
+* Bug fix in notebook 04: ``exp_sheet`` was missing.
+* Up to 5 channels are supported now.
+
+
 1.2.2
 =====
 
