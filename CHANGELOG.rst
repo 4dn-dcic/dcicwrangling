@@ -6,6 +6,12 @@ dcicwrangling
 Change Log
 ----------
 
+1.2.4
+=====
+
+* Bug fix in notebook 04: expsets were not unique in publication.
+
+
 1.2.3
 =====
 
