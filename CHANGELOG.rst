@@ -6,6 +6,11 @@ dcicwrangling
 Change Log
 ----------
 
+1.3.0
+=====
+
+* Add new useful notebook to help in adding GEO/SRA dbxrefs to items
+
 1.2.4
 =====
 
