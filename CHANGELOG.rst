@@ -6,6 +6,12 @@ dcicwrangling
 Change Log
 ----------
 
+2.0.0
+=====
+
+* Update the version of dcicutils used to go along with es upgrade
+* Tweak to GEO dbxref notebook to prevent accidentally adding the same accession more than once
+
 1.3.0
 =====
 
