@@ -226,7 +226,7 @@ toml = ["tomli"]
 
 [[package]]
 name = "dcicutils"
-version = "6.7.0"
+version = "6.8.0"
 description = "Utility package for interacting with the 4DN Data Portal and other 4DN resources"
 category = "main"
 optional = false
@@ -1458,7 +1458,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.1, <3.9"
-content-hash = "8ce1bd4074c2c7b147b8098c143d76e784abdb58edeeaf663a4854dc8b2e5ffb"
+content-hash = "6717bb0423435f8338c60070986c54d335f28b785468f71141bf49dc4e3b32a5"
 
 [metadata.files]
 anyio = [
@@ -1773,8 +1773,8 @@ coverage = [
     {file = "coverage-7.1.0.tar.gz", hash = "sha256:10188fe543560ec4874f974b5305cd1a8bdcfa885ee00ea3a03733464c4ca265"},
 ]
 dcicutils = [
-    {file = "dcicutils-6.7.0-py3-none-any.whl", hash = "sha256:5b107d3c260258e3252090e29127de8898ccf4e5b02db44f01f4198e02208d69"},
-    {file = "dcicutils-6.7.0.tar.gz", hash = "sha256:04bf796d6cd92bcc21a54711b9dd29581fca5f5e73af78f8aa79a276efaae14a"},
+    {file = "dcicutils-6.8.0-py3-none-any.whl", hash = "sha256:adbeb2beb60840954a0531399822f4b06dd0fab8a7c7e6a9e258c649906338c0"},
+    {file = "dcicutils-6.8.0.tar.gz", hash = "sha256:14e32656e8f3c3f5a02feab753f17bf34f5c22159b05a2776e993df39734e6ae"},
 ]
 debugpy = [
     {file = "debugpy-1.6.6-cp310-cp310-macosx_11_0_x86_64.whl", hash = "sha256:0ea1011e94416e90fb3598cc3ef5e08b0a4dd6ce6b9b33ccd436c1dffc8cd664"},
