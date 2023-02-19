@@ -6,6 +6,11 @@ dcicwrangling
 Change Log
 ----------
 
+2.0.1
+=====
+
+* Update ubuntu version for running github workflows
+
 2.0.0
 =====
 
