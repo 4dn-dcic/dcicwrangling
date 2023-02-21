@@ -9,7 +9,7 @@ Change Log
 2.0.1
 =====
 
-* Update ubuntu version for running github workflows
+* Update to ubuntu version 20.04 for running github workflows
 
 2.0.0
 =====
