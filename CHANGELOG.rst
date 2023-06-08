@@ -6,6 +6,13 @@ dcicwrangling
 Change Log
 ----------
 
+2.1.0
+=====
+
+* Update the version numbers for ChIP-seq pipeline update in functions/cleanup.py 
+* Update Makefile to use newer version of poetry and publish with new dcicutils script
+* Update pyproject.toml to use new dcicutils version
+
 2.0.1
 =====
 
