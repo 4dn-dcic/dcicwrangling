@@ -22,10 +22,10 @@ workflow_details = [
     ['imargi-processing-pairs', ["1.1.1_dcic_4"], 200],
     ['repliseq-parta', ['v13.1', 'v14', 'v16'], 200],
     ['bedGraphToBigWig', ['v4'], 24],
-    ['bedtobeddb', ['v2'], 24],
-    ['encode-chipseq-aln-chip', ['2.1.6'], 200],
-    ['encode-chipseq-aln-ctl', ['2.1.6'], 200],
-    ['encode-chipseq-postaln', ['2.1.6'], 200],
+    ['bedtobeddb', ['v2', 'v3'], 24],
+    ['encode-chipseq-aln-chip', ['1.1.1', '2.1.6'], 200],
+    ['encode-chipseq-aln-ctl', ['1.1.1','2.1.6'], 200],
+    ['encode-chipseq-postaln', ['1.1.1','2.1.6'], 200],
     ['encode-atacseq-aln', ['1.1.1'], 200],
     ['encode-atacseq-postaln', ['1.1.1'], 200],
     ['mergebed', ['v1'], 200],
@@ -178,8 +178,8 @@ def delete_wfrs(file_resp, my_key, delete=False, stash=None):
             pass
     else:
         output_wfr = output_wfrs[0]
-        wfr_type, time_info = output_wfr['display_title'].split(' run ')
-        if wfr_type == 'encode-chipseq-aln-ctl 1.1.1':
+        wfr_type, _ = output_wfr['display_title'].split(' run ')
+        if wfr_type in ['encode-chipseq-aln-ctl 1.1.1', 'encode-chipseq-aln-ctl 2.1.6'] :
             print('skipping control file for wfr check', file_resp['accession'])
             return
 
