@@ -28,7 +28,7 @@ publish:
 
 publish-for-ga:
 	# New Python based publish script in dcicutils (2023-04-25).
-	poetry run publish-to-pypi --noconfirm --force-allow-username
+	poetry run publish-to-pypi --noconfirm
 
 help:
 	@make info
