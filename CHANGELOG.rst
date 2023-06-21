@@ -6,6 +6,18 @@ dcicwrangling
 Change Log
 ----------
 
+2.1.0
+=====
+
+`PR:103 Various needed updates <https://github.com/4dn-dcic/dcicwrangling/pull/103>_`
+
+* Update the version numbers for ChIP-seq pipeline update in functions/cleanup.py 
+* Update Makefile to use newer version of poetry and publish with new dcicutils script
+* add tag-and-push script to commands
+* update the github action publish 
+* Update pyproject.toml to use new dcicutils version
+* Relock the dependencies in poetry.lock
+
 2.0.1
 =====
 

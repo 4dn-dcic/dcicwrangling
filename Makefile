@@ -1,7 +1,13 @@
 .PHONY: test
 
+clean:
+	rm -rf *.egg-info
+
+clear-poetry-cache:  # clear poetry/pypi cache. for user to do explicitly, never automatic
+	poetry cache clear pypi --all
+
 configure:  # does any pre-requisite installs
-	pip install poetry
+	pip install poetry==1.3.2
 
 lint:
 	flake8 dcicwrangling
@@ -17,7 +23,12 @@ update:  # updates dependencies
 	poetry update
 
 publish:
-	commands/publish
+	# New Python based publish script in dcicutils (2023-04-25).
+	poetry run publish-to-pypi
+
+publish-for-ga:
+	# New Python based publish script in dcicutils (2023-04-25).
+	poetry run publish-to-pypi --noconfirm
 
 help:
 	@make info
