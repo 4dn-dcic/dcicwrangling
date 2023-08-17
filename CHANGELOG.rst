@@ -6,6 +6,11 @@ dcicwrangling
 Change Log
 ----------
 
+2.2.1
+=====
+
+* hotfix to update .gitignore to not publish cruft
+
 2.2.0
 =====
 
