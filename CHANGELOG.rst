@@ -6,6 +6,17 @@ dcicwrangling
 Change Log
 ----------
 
+2.2.0
+=====
+
+* lock in an update to dcicutils required due to fourfront schema upgrade
+* regenerated lock file 
+
+2.1.1
+=====
+
+* fixes to GA publish script
+
 2.1.0
 =====
 
