@@ -6,6 +6,19 @@ dcicwrangling
 Change Log
 ----------
 
+2.2.0
+=====
+
+`PR:105 update dcicutils version <https://github.com/4dn-dcic/dcicwrangling/pull/105>_`
+
+* lock in an update to dcicutils required due to fourfront schema upgrade
+* regenerated lock file 
+
+2.1.1
+=====
+
+* fixes to GA publish script
+
 2.1.0
 =====
 
