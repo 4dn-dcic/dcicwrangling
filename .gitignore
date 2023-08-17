@@ -2,6 +2,9 @@
 *~
 \#*
 .DS_Store
+scripts/.DS_Store
+scripts/.coverage
+scripts/.pytest_cache/
 
 # scratch directory
 scratch/
@@ -54,6 +57,8 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+scripts/coverage.xml
+scripts/htmlcov/
 
 # Translations
 *.mo
