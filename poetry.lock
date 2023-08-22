@@ -252,18 +252,18 @@ css = ["tinycss2 (>=1.1.0,<1.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.28.28"
+version = "1.28.32"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.28.28-py3-none-any.whl", hash = "sha256:57d618f03bd269ebef6287dd4ed86ddaa1d53a4021008ad3267c6097be17e172"},
-    {file = "boto3-1.28.28.tar.gz", hash = "sha256:4a435fdbd77628e3d32cfbc8b6225e779d8f789027fadb6a51fe1b456e15ef54"},
+    {file = "boto3-1.28.32-py3-none-any.whl", hash = "sha256:ed787f250ce2562c7744395bdf32b5a7bc9184126ef50a75e97bcb66043dccf3"},
+    {file = "boto3-1.28.32.tar.gz", hash = "sha256:b505faa126db84e226f6f8d242a798fae30a725f0cac8a76c6aca9ace4e8eb28"},
 ]
 
 [package.dependencies]
-botocore = ">=1.31.28,<1.32.0"
+botocore = ">=1.31.32,<1.32.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -272,14 +272,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.31.28"
+version = "1.31.32"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.31.28-py3-none-any.whl", hash = "sha256:d6310826e37ba0209e904d691638b8e848342ec17f5187568ca02ad092c55c45"},
-    {file = "botocore-1.31.28.tar.gz", hash = "sha256:1fcfbd23c7f1f66f16c5c1a1e8565ee8ff68429cc0ee9d2acfb1b55739584cbd"},
+    {file = "botocore-1.31.32-py3-none-any.whl", hash = "sha256:8992ac186988c4b4cc168e8e479e9472da1442b193c1bf7c9dcd1877ec62d23c"},
+    {file = "botocore-1.31.32.tar.gz", hash = "sha256:7a07d8dc8cc47bf23af39409ada81f388eb78233e1bb2cde0c415756da753664"},
 ]
 
 [package.dependencies]
@@ -600,14 +600,14 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "dcicutils"
-version = "7.8.0"
+version = "7.9.0"
 description = "Utility package for interacting with the 4DN Data Portal and other 4DN resources"
 category = "main"
 optional = false
 python-versions = ">=3.7,<3.10"
 files = [
-    {file = "dcicutils-7.8.0-py3-none-any.whl", hash = "sha256:d20b9c1edc01230ea6b979295c368d5be8b75b96032c32ffcfd1956847411de6"},
-    {file = "dcicutils-7.8.0.tar.gz", hash = "sha256:069a34e5e22ae703a1e5a7c17c67f90e75e50af23c4be79fbf43ab617a27418d"},
+    {file = "dcicutils-7.9.0-py3-none-any.whl", hash = "sha256:e15d7e6d9551e5a732abb7c84731df9f70c5011b0e19b8f4ce024a2ff1a56ad7"},
+    {file = "dcicutils-7.9.0.tar.gz", hash = "sha256:0126f46f60c873c498f67bf137d585093f30e1373b0ea5d052a12920106e2395"},
 ]
 
 [package.dependencies]
@@ -1511,14 +1511,14 @@ et-xmlfile = "*"
 
 [[package]]
 name = "opensearch-py"
-version = "2.3.0"
+version = "2.3.1"
 description = "Python client for OpenSearch"
 category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4"
 files = [
-    {file = "opensearch-py-2.3.0.tar.gz", hash = "sha256:493b224d0f865f62663f689c3a7662b1edccf9ee6c7643f2561cafda04e3a66a"},
-    {file = "opensearch_py-2.3.0-py2.py3-none-any.whl", hash = "sha256:4093d0bbe575979d67cfd74a153eb91d82e354e232d76c6980876321c73056c1"},
+    {file = "opensearch-py-2.3.1.tar.gz", hash = "sha256:f82a2e914835f7d645a632777de9a62d0c0de60ffd2f8cdae2ccfa4cfc40a185"},
+    {file = "opensearch_py-2.3.1-py2.py3-none-any.whl", hash = "sha256:eafbc5d56a7ca696afba7d77bcda1bbb849050cbf9265d57d8476576cb576395"},
 ]
 
 [package.dependencies]
@@ -2567,4 +2567,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.7.1, <3.9"
-content-hash = "ea127b8235772d06ead774dbda0bb9939b9fe935fff1175275536dc97b47f46e"
+content-hash = "36b12decd9283e015963cb6bb219d83806101b349a9eb996b0df3e200daa1858"
