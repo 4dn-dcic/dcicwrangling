@@ -1,6 +1,7 @@
 from dcicutils import ff_utils
 from uuid import UUID
 import os
+import sys
 import json
 import openpyxl
 import warnings  # to suppress openpxl warning about headers
@@ -310,26 +311,13 @@ def find_uuids(val):
     return vals
 
 
-def get_schema_names(con_key):
-    schema_name = {}
-    profiles = ff_utils.get_metadata('/profiles/', key=con_key, add_on='frame=raw')
-    for key, value in profiles.items():
-        try:
-            schema_name[key] = value['id'].split('/')[-1][:-5]
-        except:
-            continue
-    return schema_name
-
-
 def get_schema_names_and_fields(con_key):
     '''Gets concrete item types from profiles and returns a dict of schema
     names, with properties and property type (including if array_linkTo)'''
     schemas = {}
-    profiles = ff_utils.get_metadata('/profiles/', key=con_key, add_on='frame=raw')
+    profiles = ff_utils.get_schemas(key=con_key, allow_abstract=False, require_id=True)
     for item in profiles.values():
-        if item['isAbstract'] is True:
-            continue
-        schema_name = item['id'].split('/')[-1][:-5]
+        schema_name = item['$id'].split('/')[-1][:-5]
         schemas[schema_name] = {}
         for field, content in item['properties'].items():
             field_type = content['type']
@@ -337,15 +325,6 @@ def get_schema_names_and_fields(con_key):
                 field_type = 'array_linkTo'
             schemas[schema_name][field] = field_type
     return schemas
-
-
-def dump_results_to_json(store, folder):
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-    for a_type in store:
-        filename = folder + '/' + a_type + '.json'
-        with open(filename, 'w') as outfile:
-            json.dump(store[a_type], outfile, indent=4)
 
 
 def printTable(myDict, colList=None):

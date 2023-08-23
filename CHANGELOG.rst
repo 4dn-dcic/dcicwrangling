@@ -6,6 +6,17 @@ dcicwrangling
 Change Log
 ----------
 
+
+2.3.0
+=====
+
+`PR:106 update get_schemas calls <https://github.com/4dn-dcic/dcicwrangling/pull/106>_`
+
+* update to use get_schemas function from dcicutils rather than having a 'broken' redundant copy
+* same for dump_json_data function
+* updated notebooks to call dcicutils versions of functions
+* simplify get_schemas_names_and_fields to use dcicutil function
+
 2.2.1
 =====
 
