@@ -6,6 +6,12 @@ dcicwrangling
 Change Log
 ----------
 
+2.4.0
+=====
+
+`PR:107 add useful notebook #15 to add opf collections to esets <https://github.com/4dn-dcic/dcicwrangling/pull/107>_`
+
+* added a new useful notebook that allows you to use a lab submitted processed file sheet to link replicate sets to other processed files collections for that set
 
 2.3.0
 =====
