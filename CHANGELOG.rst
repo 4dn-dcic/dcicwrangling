@@ -6,6 +6,11 @@ dcicwrangling
 Change Log
 ----------
 
+2.4.1
+=====
+
+* Fixed 12_geo_submission.ipynb to avoid adding duplicate protocol items in the JSON files specifically for experiments where both 'protocol' and 'protocol_variation' is present
+
 2.4.0
 =====
 
