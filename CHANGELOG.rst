@@ -6,7 +6,7 @@ dcicwrangling
 Change Log
 ------
 
-3.0.0
+3.0.1
 =====
 
 `PR:119 update setting for repliseq v16.1 <https://github.com/4dn-dcic/dcicwrangling/pull/110>_`
