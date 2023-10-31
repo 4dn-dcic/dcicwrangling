@@ -73,19 +73,23 @@ def step_settings(step_name, my_organism, attribution, params={}):
         },
         {
             'wf_name': 'repliseq-parta',
-            'wf_uuid': '4dn-dcic-lab:wf-repliseq-parta-v16',
+            'workflow_uuid': '4dn-dcic-lab:wf-repliseq-parta-v16.1',
             "parameters": {"nthreads": 4, "memperthread": "2G"},
             'custom_pf_fields': {
                 'filtered_sorted_deduped_bam': {
                     'genome_assembly': genome,
-                    'file_type': 'alignment',
-                    'description': out_n_rep},
+                    'file_type': 'alignments',
+                    'description': 'This is an output file of the RepliSeq processing pipeline'},
+                'count_bg_rpkm': {
+                    'genome_assembly': genome,
+                    'file_type': 'normalized counts',
+                    'description': 'read counts, unfiltered RPKM'},
                 'count_bg': {
                     'genome_assembly': genome,
                     'file_type': 'counts',
-                    'description': 'read counts per 5 kb bin, unfiltered, unnormalized'}
+                    'description': 'read counts, unfiltered, unnormalized'}
             }
-        },
+        },  
         {
             "wf_name": "bedGraphToBigWig",
             "wf_uuid": "667b14a7-a47e-4857-adf1-12a6393c4b8e",

@@ -20,7 +20,7 @@ workflow_details = [
     ['imargi-processing-fastq', ["1.1.1_dcic_4"], 200],
     ['imargi-processing-bam', ["1.1.1_dcic_4"], 200],
     ['imargi-processing-pairs', ["1.1.1_dcic_4"], 200],
-    ['repliseq-parta', ['v13.1', 'v14', 'v16'], 200],
+    ['repliseq-parta', ['v13.1', 'v14', 'v16', 'v16.1'], 200],
     ['bedGraphToBigWig', ['v4'], 24],
     ['bedtobeddb', ['v2', 'v3'], 24],
     ['encode-chipseq-aln-chip', ['1.1.1', '2.1.6'], 200],

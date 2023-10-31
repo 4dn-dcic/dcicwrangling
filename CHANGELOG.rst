@@ -4,7 +4,22 @@ dcicwrangling
 
 ----------
 Change Log
-----------
+------
+
+3.0.1
+=====
+
+`PR:119 update setting for repliseq v16.1 <https://github.com/4dn-dcic/dcicwrangling/pull/110>_`
+
+* updates to wfr_settings and cleanup utils to support updated v16.1 repliseq
+
+
+3.0.0
+=====
+
+`PR:109 python 3.8-3.11 support <https://github.com/4dn-dcic/dcicwrangling/pull/109>_`
+
+* upgrade to support python versions 3.8 - 3.11
 
 2.4.1
 =====
