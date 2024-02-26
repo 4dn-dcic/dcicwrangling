@@ -6,10 +6,19 @@ dcicwrangling
 Change Log
 ------
 
+
+3.0.2
+=====
+
+`PR:111 update setting for repliseq v16.1 <https://github.com/4dn-dcic/dcicwrangling/pull/111>_`
+
+* bug fix in release notebook so user_content items are dealt with appropriately when changing status of sets to pre-release
+
+
 3.0.1
 =====
 
-`PR:119 update setting for repliseq v16.1 <https://github.com/4dn-dcic/dcicwrangling/pull/110>_`
+`PR:110 update setting for repliseq v16.1 <https://github.com/4dn-dcic/dcicwrangling/pull/110>_`
 
 * updates to wfr_settings and cleanup utils to support updated v16.1 repliseq
 
