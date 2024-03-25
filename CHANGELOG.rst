@@ -7,6 +7,13 @@ Change Log
 ------
 
 
+3.0.3
+=====
+
+
+* Added new wrangling notebook 16_check_publication_in_GEO.ipynb to check for associated GEO datasets for a given list of PMIDs.
+
+
 3.0.2
 =====
 
