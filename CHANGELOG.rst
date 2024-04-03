@@ -10,7 +10,7 @@ Change Log
 3.1.0
 =====
 
-`PR:112 add new delete/patch script <https://github.com/4dn-dcic/dcicwrangling/pull/112>_`
+`PR:113 add new delete/patch script <https://github.com/4dn-dcic/dcicwrangling/pull/113>_`
 
 * added a new script to facilitating deleting the same field(s) for multiple items or setting the status of the items to 'deleted'
 * added tests 
