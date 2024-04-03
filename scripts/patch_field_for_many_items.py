@@ -1,6 +1,6 @@
 import sys
 import argparse
-from dcicutils.ff_utils import get_authentication_with_server, patch_metadata, delete_field
+from dcicutils.ff_utils import patch_metadata, delete_field
 from functions import script_utils as scu
 
 
@@ -13,7 +13,8 @@ def get_args(args):
                         help="The field to update.")
     parser.add_argument('value',
                         help="The value(s) to update. Array fields need \"''\" surround \
-                        even if only a single value i.e. \"'value here'\" or \"'v1' 'v2'\"")
+                        even if only a single value i.e. \"'value here'\" or \"'v1' 'v2'\" \
+                        NOTE: can delete field by passing val *delete*")
     parser.add_argument('--isarray',
                         default=False,
                         action='store_true',
