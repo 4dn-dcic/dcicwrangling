@@ -7,6 +7,7 @@ Useful for deleting multiple fields or changing item status to deleted
 NOTE: can use patch_field_for_many_items script to delete a single field for many items
 but this script is more direct/flexible in some ways
 '''
+import sys
 import argparse
 from dcicutils.ff_utils import get_metadata, delete_metadata, delete_field
 from functions import script_utils as scu
@@ -25,7 +26,7 @@ def get_args(args):
 
 
 def main():  # pragma: no cover
-    args = get_args()
+    args = get_args(sys.argv[1:])
     auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
     dry_run = True
     if args.dbupdate:
