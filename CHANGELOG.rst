@@ -7,6 +7,11 @@ Change Log
 ------
 
 
+3.1.1
+=====
+
+* added a new jupyter notebook to add award and lab details for a curated workbook
+
 3.1.0
 =====
 
