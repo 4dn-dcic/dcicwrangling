@@ -10,10 +10,10 @@ workflow_details = [
     ['fastqc-0-11-4-1', ['0.2.0'], 50],
     ['fastqc', ['v1', 'v2'], 50],
     # 4dn ones
-    ['bwa-mem', ['0.2.6'], 50],
+    ['bwa-mem', ['0.2.6', '0.3.0'], 50],
     ['pairsqc-single', ['0.2.5', '0.2.6'], 100],
-    ['hi-c-processing-bam', ['0.2.6'], 50],
-    ['hi-c-processing-pairs', ['0.2.6', '0.2.7'], 200],
+    ['hi-c-processing-bam', ['0.2.6', '0.3.0'], 50],
+    ['hi-c-processing-pairs', ['0.2.6', '0.2.7', '0.3.0'], 200],
     ['hi-c-processing-pairs-nore', ['0.2.6'], 200],
     ['hi-c-processing-pairs-nonorm', ['0.2.6'], 200],
     ['hi-c-processing-pairs-nore-nonorm', ['0.2.6'], 200],
