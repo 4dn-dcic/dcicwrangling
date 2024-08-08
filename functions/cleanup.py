@@ -135,12 +135,13 @@ def delete_wfrs(file_resp, my_key, workflow_details, delete=False, stash=None):
     # do not delete output wfrs of control files
     output_wfrs = file_resp.get('workflow_run_outputs')
     if not output_wfrs:
-        if file_type == 'files-processed':
-            # user submtted processed files
-            return
-        else:
+        #if file_type == 'files-processed':
+            # user submtted processed files but we still want to see if there is an associated errored wfr
+            # return
+        #    continue
+        #else:
             # raw files:
-            pass
+        pass
     else:
         output_wfr = output_wfrs[0]
         wfr_type, _ = output_wfr['display_title'].split(' run ')
@@ -151,8 +152,6 @@ def delete_wfrs(file_resp, my_key, workflow_details, delete=False, stash=None):
     wfr_uuids = [i['uuid'] for i in file_resp.get('workflow_run_inputs')]
     wfrs = []
     if wfr_uuids:
-        if '15700187-3843-4062-95ff-57c8ac913a1d' in wfr_uuids:
-            print("WE HAVE THE PROBLEM HERE")
         # fetch them from stash
         if stash:
             wfrs = [i for i in stash if i['uuid'] in wfr_uuids]
