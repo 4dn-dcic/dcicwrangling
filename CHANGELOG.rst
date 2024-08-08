@@ -7,6 +7,14 @@ Change Log
 ------
 
 
+3.2.0
+=====
+
+* refactor of cleanup.py to get info about accepted workflow versions and run times from db and remove hard coded array
+* updated find_and_release notebook to utilize this - not backward compatible
+* corrected small bug in delete_wfr function that failed to cleanup errored or duplicated workflow runs on user submitted files as they are not outputs of wfrs
+
+
 3.1.1
 =====
 

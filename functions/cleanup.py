@@ -2,7 +2,7 @@ from dcicutils import ff_utils
 from datetime import datetime
 
 
-# function to get workflow_details info from db 
+# function to get workflow_details info from db
 # initial datastructure that is the same as that to get info for foursight is transformed
 # into the format used in the cleanup functions
 # workflow name, accepted revision numbers (0 if none), accetable run time (hours)
@@ -86,7 +86,7 @@ def get_wfr_report(wfrs):
         # skip all style awsem runs
         try:
             wfr_type_base, wfr_version = wfr_type.strip().split(' ')
-        except:
+        except Exception:
             continue
         time_info = time_info.strip('on').strip()
         try:
@@ -141,7 +141,7 @@ def delete_wfrs(file_resp, my_key, workflow_details, delete=False, stash=None):
     else:
         output_wfr = output_wfrs[0]
         wfr_type, _ = output_wfr['display_title'].split(' run ')
-        if wfr_type in ['encode-chipseq-aln-ctl 1.1.1', 'encode-chipseq-aln-ctl 2.1.6'] :
+        if wfr_type in ['encode-chipseq-aln-ctl 1.1.1', 'encode-chipseq-aln-ctl 2.1.6']:
             print('skipping control file for wfr check', file_resp['accession'])
             return
 
