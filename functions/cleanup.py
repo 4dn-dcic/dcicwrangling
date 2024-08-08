@@ -201,6 +201,8 @@ def delete_wfrs(file_resp, my_key, workflow_details, delete=False, stash=None):
         else:
             wfr_report = get_wfr_report(wfrs)
             for wfr_to_del in wfr_report:
+                if wfr_to_del['uuid'] == '15700187-3843-4062-95ff-57c8ac913a1d':
+                    import pdb; pdb.set_trace()
                 if wfr_to_del['status'] != 'deleted':
                     if wfr_to_del['wfr_name'] not in workflow_names:
                         print('Unlisted Workflow', wfr_to_del['wfr_name'], 'deleted file workflow',
