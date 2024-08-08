@@ -152,7 +152,7 @@ def delete_wfrs(file_resp, my_key, workflow_details, delete=False, stash=None):
     wfrs = []
     if wfr_uuids:
         if '15700187-3843-4062-95ff-57c8ac913a1d' in wfr_uuids:
-            import pdb; pdb.set_trace()
+            print("WE HAVE THE PROBLEM HERE")
         # fetch them from stash
         if stash:
             wfrs = [i for i in stash if i['uuid'] in wfr_uuids]
