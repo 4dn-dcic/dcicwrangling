@@ -135,12 +135,8 @@ def delete_wfrs(file_resp, my_key, workflow_details, delete=False, stash=None):
     # do not delete output wfrs of control files
     output_wfrs = file_resp.get('workflow_run_outputs')
     if not output_wfrs:
-        #if file_type == 'files-processed':
-            # user submtted processed files but we still want to see if there is an associated errored wfr
-            # return
-        #    continue
-        #else:
-            # raw files:
+        # user submitted and raw files generally lack wfr_outputs but they can still have
+        # duplicate and errored runs so changed return (for file_processed) to pass for all
         pass
     else:
         output_wfr = output_wfrs[0]
