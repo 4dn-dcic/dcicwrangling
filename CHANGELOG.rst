@@ -7,6 +7,12 @@ Change Log
 ------
 
 
+3.2.1
+=====
+
+* Minor update to Notebook 16_add_lab_award.ipynb to provide option to keep only alias, lab and award column in the output file.
+
+
 3.2.0
 =====
 
