@@ -142,7 +142,6 @@ def main():
     args = get_args(sys.argv[1:])
     auth = scu.authenticate(key=args.key, keyfile=args.keyfile, env=args.env)
     dryrun = not args.dbupdate
-
     file_list = scu.get_item_ids_from_args(args.input, auth, args.search)
     wf_data = get_metadata(args.workflow, auth)
     for f in file_list:

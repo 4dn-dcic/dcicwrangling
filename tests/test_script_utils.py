@@ -266,7 +266,7 @@ def test_get_item_uuid_w_atid(mocker, auth):
     atid = '/labs/test-lab'
     mt = mocker.patch('functions.script_utils.get_metadata', return_value={'uuid': 'test_uuid'})
     result = scu.get_item_uuid(atid, auth)
-    assert mt.called_with(atid, auth)
+    mt.assert_called_with(atid, auth)
     assert result == 'test_uuid'
 
 
@@ -274,7 +274,7 @@ def test_get_item_uuid_not_found(mocker, auth):
     atid = '/labs/non-lab'
     mt = mocker.patch('functions.script_utils.get_metadata', return_value={'status': 'error'})
     result = scu.get_item_uuid(atid, auth)
-    assert mt.called_with(atid, auth)
+    mt.assert_called_with(atid, auth)
     assert result is None
 
 

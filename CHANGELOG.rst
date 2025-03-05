@@ -6,6 +6,14 @@ dcicwrangling
 Change Log
 ------
 
+4.0.0
+=====
+
+* drop support for python 3.8
+* add python 3.12
+* update lock file 
+* update mail-publish.yml to use new dcicutils
+
 
 3.2.1
 =====

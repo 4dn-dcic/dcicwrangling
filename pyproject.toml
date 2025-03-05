@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dcicwrangling"
-version = "3.2.1"
+version = "4.0.0"
 description = "Scripts and Jupyter notebooks for 4DN wrangling"
 authors = ["4DN-DCIC Team <support@4dnucleome.org>"]
 license = "MIT"
@@ -10,8 +10,8 @@ repository = "https://github.com/4dn-dcic/dcicwrangling"
 packages = [{ include="scripts", from="." }]
 
 [tool.poetry.dependencies]
-python = ">=3.8.0, <3.12"
-dcicutils = "^8.0.0"
+python = ">=3.9, <3.13"
+dcicutils = "^8.13.0"
 openpyxl = "^3.0.9"
 Biopython = "^1.80"
 GEOparse = "^2.0.1"
