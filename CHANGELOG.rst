@@ -11,7 +11,7 @@ Change Log
 * New notebook to calculate FOF-CT statistics used in paper.
 
 
-4.0.0
+4.0.1
 =====
 
 * drop support for python 3.8
