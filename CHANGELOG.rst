@@ -5,6 +5,11 @@ dcicwrangling
 ----------
 Change Log
 ------
+4.0.1
+=====
+
+* New notebook to calculate FOF-CT statistics used in paper.
+
 
 4.0.0
 =====
