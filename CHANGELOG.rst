@@ -5,6 +5,12 @@ dcicwrangling
 ----------
 Change Log
 ------
+4.0.2
+=====
+
+* New notebook to populate GEO submission template with 4DN metadata
+
+
 4.0.1
 =====
 
