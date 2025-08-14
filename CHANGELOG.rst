@@ -5,6 +5,12 @@ dcicwrangling
 ----------
 Change Log
 ------
+4.0.3
+=====
+
+* Bug fixes for GEO submission #18 notebook
+
+
 4.0.2
 =====
 
