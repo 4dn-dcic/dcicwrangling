@@ -5,6 +5,12 @@ dcicwrangling
 ----------
 Change Log
 ------
+4.0.3
+=====
+
+* Bug fixes for GEO submission #18 notebook added new notebook #19 to add microscope configuration to experiments and/or update microscope configuration attribution.
+
+
 4.0.2
 =====
 
